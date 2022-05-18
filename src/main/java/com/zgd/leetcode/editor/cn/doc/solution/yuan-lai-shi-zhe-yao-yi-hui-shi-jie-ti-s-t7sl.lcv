@@ -1,0 +1,30 @@
+### 解题思路
+
+如果只能访问当前节点，那么该题的解题思路就是，将自己变成其他节点。
+举个例子：A->B->C->D
+如果要删掉 B 节点，那么只需要将 B 变为 C，再把 B 的指针指向 D，即可完成。
+
+### 代码
+
+* java
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { 
+            val = x; 
+       }
+ * }
+ */
+class Solution {
+    public void deleteNode(ListNode node) {
+        node.val = node.next.val;
+        node.next = node.next.next;
+        
+    }
+}
+```
+
