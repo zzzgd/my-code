@@ -1,0 +1,35 @@
+class Solution {
+    public int addRungs(int[] rungs, int dist) {
+      //需要插入的台阶数
+      int newRungs = 0;
+      //遍历数组, 第一个高度是0
+      //上一次所在的高度
+      int lastHigh = 0;
+      //当前的台阶
+      int curRungIndex = 0;
+      //要满足场景的结束,则是当前台阶到了最后一个台阶
+      while(curRungIndex < rungs.length){
+        //在固定高度内,能达到,直接下一个台阶
+        if (rungs[curRungIndex] - lastHigh <= dist){
+          lastHigh = rungs[curRungIndex];
+          curRungIndex++;
+          //下次
+        }else{
+          //如果台阶迈不上去,增加台阶,台阶数=差值/固定值
+          int i = rungs[curRungIndex] / dist;
+          newRungs += i;
+          //其实就是直接插入一个固定高度
+          lastHigh = lastHigh + dist * i;
+        }
+      }
+      System.out.println(newRungs);
+      return newRungs;
+    }
+}
+
+//total_testcases:117
+//total_correct:33
+//input_formatted:[1,3,5,10]
+2
+//expected_output:2
+//code_output:5
