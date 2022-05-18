@@ -1,0 +1,74 @@
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public Node next;
+
+    public Node() {}
+
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val, Node _next) {
+        val = _val;
+        next = _next;
+    }
+};
+*/
+
+class Solution {
+    public Node insert(Node head, int insertVal) {
+      //两种情况:
+      //   * 2,4,6 插入1或7 找不到前<x<后的,x比最大值大,比最小值小, 只能插入这个循环的6->2断开点
+      //   * 4,6,2 插入3或5, 找得到前<x<后, 插入两者之间
+      Node node = new Node(insertVal);
+      if(head == null){
+        //这里要注意, 要保证循环
+        node.next = node;
+        return node;
+      }
+
+      if (head.next ==null){
+        node.next = head;
+        head.next = node;
+        return head;
+      }
+      //遍历
+      Node cur = head;
+      Node next = head.next;
+      while (true){
+        //第一种情况
+        if (cur.val > next.val){
+          //此为断点,cur是最大值,next是最小值
+          if (insertVal > cur.val || insertVal < next.val){
+            //插入
+            cur.next = node;
+            node.next = next;
+            return head;
+          }
+        }
+        //第二种情况
+        if (cur.val <= insertVal && next.val >= insertVal){
+          //插入
+          cur.next = node;
+          node.next = next;
+          return head;
+        }
+        cur = next;
+        next = cur.next;
+      }
+
+    }
+}
+
+//runtime:N/A
+//memory:N/A
+//total_testcases:106
+//total_correct:2
+//input_formatted:[1]
+0
+//expected_output:[1,0]
+//code_output:
+//runtime_error:
+//last_testcase:[1] 0
