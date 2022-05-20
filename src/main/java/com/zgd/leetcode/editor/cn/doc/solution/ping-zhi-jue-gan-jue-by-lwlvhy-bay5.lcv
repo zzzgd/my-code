@@ -1,0 +1,37 @@
+### 解题思路
+
+![11.png](https://pic.leetcode-cn.com/1634024420-AXWQkD-11.png)
+1. 看到题目凭直觉感觉可以分为k==1和k>1的情况;
+2. k==1筛选出最小的字典序列;
+3. k>1的时候直接对字符串进行排序;
+
+### 代码
+
+* cpp
+
+```cpp
+class Solution {
+public:
+    string orderlyQueue(string s, int k) {
+        int N=s.size();
+        string temp=s;
+        sort(temp.begin(),temp.end());
+        if(k!=1){
+            return temp;
+        }     
+        string res="zzzzzzzzzzzzz";
+        for(int i=0;i<N;i++){
+            if(s[i]==temp[0]){
+                string str="";
+                str+=s.substr(i);
+                str+=s.substr(0,i);
+                if(str<res){
+                    res=str;
+                }
+            }
+        }
+        return res;
+    }
+};
+```
+
