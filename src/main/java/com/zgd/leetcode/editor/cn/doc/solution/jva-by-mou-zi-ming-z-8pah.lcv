@@ -1,0 +1,39 @@
+* 
+
+```
+// 0和1个数相同的子数组，求最大长度
+// 朴素的做法是两个for循环，遍历所有子数组，找到0和1个数相同的最大长度（counter = 0）
+// 但是这么做太慢，往往会超时，所以需要用到前缀和
+// 如果当前位置出现和前面一样的counter，说明中间一定经过了相同数量的0和1
+// 这里补充我想的另外一个思路（错误的），我有想过用滑动窗口，因为滑动窗口也是用来得到最大长度的连续数组
+// 但是对于左右指针前进和后退的判断条件，在此题上找不到，所以排除这个方法
+class Solution {
+    public int findMaxLength(int[] nums) {
+        int ans = 0;
+        int len = nums.length;
+        // counter：遇到1就+1，遇到0就-1
+        int counter = 0;
+        // map (counter,索引)
+        Map<Integer,Integer> map = new HashMap<>();
+        // 如果当前遍历到的位置的counter=0，说明前面的0和1数量相同，那么长度就是当前index减(-1)
+        // 所以这一步必不可少
+        map.put(0,-1);
+        for(int i=0; i<len; i++) {
+            int num = nums[i];
+            if(num == 1) {
+                counter++;
+            } else {
+                counter--;
+            }
+            // 如果当前位置出现和前面一样的counter，说明中间一定经过了相同数量的0和1
+            if(map.containsKey(counter)) {
+                ans = Math.max(ans, i-map.get(counter));
+            } else {
+                map.put(counter, i);
+            }
+        }
+        return ans;
+    }
+}
+```
+
