@@ -1,0 +1,85 @@
+# 方法一：回溯 + 剪枝
+
+由于我们要拼成正方形，且火柴不可以被折断，所以当火柴的总长度不是4的倍数，并且最大的火柴超过边长时，一定不能拼成正方形。
+然后我们逐个尝试每根火柴，尝试进行拼成正方形。
+**代码如下：**
+
+* 
+
+```
+        public boolean makesquare(int[] matchsticks) {
+        //周长
+        int totalLength = Arrays.stream(matchsticks).sum();
+        //不是4的整数倍一定拼不成正方形
+        if (totalLength % 4 != 0) {
+            return false;
+        }
+        //边长
+        int edgeLength = totalLength / 4;
+        Arrays.sort(matchsticks);
+        //最长火柴的长度大于边长 无法拼成
+        if (matchsticks[matchsticks.length - 1] > edgeLength) {
+            return false;
+        }
+        //转化为降序
+        for (int i = 0, j = matchsticks.length - 1; i < j; i++, j--) {
+            int temp = matchsticks[i];
+            matchsticks[i] = matchsticks[j];
+            matchsticks[j] = temp;
+        }
+        int[] edges = new int[4];
+        return dfs(0, matchsticks, edges, edgeLength);
+    }
+
+    private boolean dfs(int index, int[] matchsticks, int[] edges, int edgeLength) {
+        if (index == matchsticks.length) {
+            return true;
+        }
+        for (int i = 0; i < 4; i++) {
+            //第i个边尝试 使用matchsticks[index]火柴
+            if (edges[i] + matchsticks[index] > edgeLength) {
+                continue;
+            }
+            edges[i] += matchsticks[index];
+            if (dfs(index + 1, matchsticks, edges, edgeLength)) {
+                return true;
+            }
+            //回溯
+            edges[i] -= matchsticks[index];
+        }
+        return false;
+    }
+```
+
+由于效率并不是很高，因为我们暴力的遍历整个树
+我们可以对回溯尝试进行剪枝操作，若上一条边没有成功，则当前边一定不会成功。
+**代码如下：**
+
+* 
+
+```
+private boolean dfs(int index, int[] matchsticks, int[] edges, int edgeLength) {
+    if (index == matchsticks.length) {
+        return true;
+    }
+    for (int i = 0; i < 4; i++) {
+        //第i个边尝试 使用matchsticks[index]火柴
+        if (edges[i] + matchsticks[index] > edgeLength || (i > 0 && edges[i - 1] == edges[i])) {
+            continue;
+        }
+        edges[i] += matchsticks[index];
+        if (dfs(index + 1, matchsticks, edges, edgeLength)) {
+            return true;
+        }
+        //回溯
+        edges[i] -= matchsticks[index];
+    }
+    return false;
+}
+```
+
+![image.png](https://pic.leetcode-cn.com/1654066761-qTShrY-image.png)
+我们还可以不进行倒序数组，采用逆向遍历matchsticks 在DFS的时候index - 1也可以节约一部分时间。
+写题解不易，如果对您有帮助，记得关注 + 点赞 + 收藏呦！！！
+每天都会更新每日一题题解，大家加油！！！
+

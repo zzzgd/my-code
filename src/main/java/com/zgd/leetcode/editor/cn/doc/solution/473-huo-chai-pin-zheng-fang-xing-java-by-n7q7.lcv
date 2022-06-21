@@ -1,0 +1,84 @@
+### 解题思路
+
+能不能用matchsticks凑齐4个长度aim的棍子，其中可用为limit，一定凑不成的记在dp
+
+参数依次为：数据，凑齐4个棍子，每个棍子的长度，还有哪些能用，目前凑了多少，缓存
+`this.find(matchsticks, 4, aim, limit - 1, 0, dp);`
+目标：用可用的棍子凑aim
+
+和698. 划分为k个相等的子集 很像啊。没练明白这类问题，想练的朋友就去看698。
+
+-------------
+
+位运算 -> 状态压缩 + 记忆化搜索
+
+##### [中等] 473. 火柴拼正方形【位运算】【数组】【动态规划】【回溯】【状态压缩】[[动态规划](https://leetcode.cn/problems/matchsticks-to-square/solution/473-huo-chai-pin-zheng-fang-xing-java-by-n7q7/)] [[473. 火柴拼正方形](https://leetcode.cn/problems/matchsticks-to-square/)]
+
+##### [中等] 698. 划分为k个相等的子集【位运算】【记忆化搜索】【数组】【动态规划】【回溯】【状态压缩】[[记忆化搜索 + 位运算](https://leetcode-cn.com/problems/partition-to-k-equal-sum-subsets/solution/698-hua-fen-wei-kge-xiang-deng-de-zi-ji-qkaz2/)（状态压缩）] [[698. 划分为k个相等的子集](https://leetcode-cn.com/problems/partition-to-k-equal-sum-subsets/)]
+
+##### [困难] 1255. 得分最高的单词集合【位运算】【数组】【动态规划】【字符串】【回溯】【状态压缩】[[记忆化搜索 + 位运算状态](https://leetcode-cn.com/problems/maximum-score-words-formed-by-letters/solution/1255-de-fen-zui-gao-de-dan-ci-ji-he-by-w-xytw/)] [[1255. 得分最高的单词集合](https://leetcode-cn.com/problems/maximum-score-words-formed-by-letters/)]
+
+##### [中等] 1947. 最大兼容性评分和【位运算】【状态压缩】【动态规划】【回溯】【数组】[[位运算 状态压缩 记忆化搜索](https://leetcode.cn/problems/maximum-compatibility-score-sum/solution/1947-zui-da-jian-rong-xing-ping-fen-he-j-i8m8/)] [[1947. 最大兼容性评分和](https://leetcode.cn/problems/maximum-compatibility-score-sum/)]
+
+##### [中等] 1986. 完成任务的最少工作时间段【位运算】【动态规划】【状态压缩】【回溯】[[位运算 动态规划 状态压缩](https://leetcode.cn/problems/minimum-number-of-work-sessions-to-finish-the-tasks/solution/1986-wan-cheng-ren-wu-de-zui-shao-gong-z-ri0l/)] [[1986. 完成任务的最少工作时间段](https://leetcode.cn/problems/minimum-number-of-work-sessions-to-finish-the-tasks/)]
+
+##### [困难] 980. 不同路径 III【位运算】【数组】【回溯】【矩阵】[[记忆化搜索 + 位运算](https://leetcode-cn.com/problems/unique-paths-iii/solution/980-bu-tong-lu-jing-iii-java-by-wa-pian-qrwyg/)] [[980. 不同路径 III](https://leetcode-cn.com/problems/unique-paths-iii/)]
+
+### 代码
+
+* java
+
+```java
+class Solution {
+	public boolean makesquare(int[] matchsticks) {
+		int total = 0;
+		for (int num : matchsticks) {
+			total += num;
+		}
+		if (total % 4 != 0) {
+			// 除不开直接凉
+			return false;
+		}
+		int aim = total / 4;
+		int len = matchsticks.length;
+		int limit = 1 << len;
+		// 哪些组合是不行的。
+		Boolean[] dp = new Boolean[limit];
+		// 可用为limit能不能用matchsticks凑齐4个长度aim的棍子，一定凑不成的记在dp
+		// 数据，凑齐4个棍子，每个棍子的长度，还有哪些能用，目前凑了多少，缓存
+		return this.find(matchsticks, 4, aim, limit - 1, 0, dp);
+	}
+
+	private boolean find(int[] matchsticks, int num, int aim, int limit, int sum, Boolean[] dp) {
+		if (num == 0) {
+			return limit == 0;
+		}
+		if (dp[limit] != null) {
+			return dp[limit];
+		}
+		int len = matchsticks.length;
+		for (int i = 0; i < len; i++) {
+			int index = 1 << i;
+			// 这个位置能用
+			if ((limit & index) != 0) {
+				int tyr = matchsticks[i];
+				// 凑齐一个棍子
+				if (sum + tyr == aim) {
+					// num - 1棍子少一个，limit-index这个棍子不能用了，从0开始继续找
+					if (this.find(matchsticks, num - 1, aim, limit - index, 0, dp)) {
+						return true;
+					}
+				} else if (sum + tyr < aim) {
+					// 不够aim棍子没少，limit-index这个棍子不能用了，sum + tyr累计找到的数量
+					if (this.find(matchsticks, num, aim, limit - index, sum + tyr, dp)) {
+						return true;
+					}
+				}
+			}
+		}
+		dp[limit] = false;
+		return false;
+	}
+}
+```
+
