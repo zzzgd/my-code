@@ -1,0 +1,48 @@
+### 解题思路
+
+a和b中，假设`a > b`，那么`a`字符将是更多的一个，相比`b`更容易产生相连的情况。
+
+解决方案是用`b`将`a`隔开。此时情况有以下两种（`aabb`这种隔离法可以转化为`abab`）：
+
+- `aab`；
+- `ab`;
+
+那么对二者剩余数目进行判断即可：
+
+- 当`a`剩余数目比`b`多，为了尽快用掉`a`，插入`aab`；
+- 当`a`剩余数目`<= b`，插入`ab`。
+
+### 代码
+
+* javascript
+
+```javascript
+/**
+ * @param {number} a
+ * @param {number} b
+ * @return {string}
+ */
+var strWithout3a3b = function(a, b) {
+    let sn = a >= b ? b : a;
+    let ln = a >= b ? a : b;
+    let s = a >= b ? 'b' : 'a';
+    let l = a >= b ? 'a' : 'b';
+    let res = [];
+    while (sn > 0 || ln > 0) {
+        if (ln > sn && ln > 0) {
+            res.push(l);
+            ln -= 1;
+        }
+        if (ln > 0) {
+            res.push(l);
+            ln -= 1;
+        }
+        if (sn > 0) {
+            res.push(s);
+            sn -= 1;
+        }
+    }
+    return res.join('');
+};
+```
+
