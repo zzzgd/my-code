@@ -1,0 +1,48 @@
+### 解题思路
+
+使用深度优先遍历的方式得到每一条从根到叶节点路径的字符串，反转即为待比较的字符串。
+在此过程中使用 $ans$ 字典序最小的字符串值，最终返回 $ans$ 即可。
+
+### 代码
+
+* java
+
+```java
+class Solution {
+    //选择一个大于'z'的字符作为初始值
+    String ans = "~";
+    public String smallestFromLeaf(TreeNode root) {
+        dfs(root, new StringBuffer());
+        return ans;
+    }
+
+    //深度优先搜索每一条根到叶的路径
+    public void dfs(TreeNode root, StringBuffer sb){
+        //遍历到树的末端，返回
+        if(root == null) return;
+        //将当前节点的字符拼接到路径字符串中
+        sb.append((char)('a' + root.val));
+        //叶子节点：当前路径字符串s的字典序若小于ans，则更新到ans中
+        if(root.left == null && root.right == null){
+            sb.reverse();
+            String s = sb.toString();
+            sb.reverse(); // sb进行状态重置
+
+            if(s.compareTo(ans) < 0){
+                ans = s;
+            }
+        }
+        //深度优先遍历
+        dfs(root.left, sb);
+        dfs(root.right, sb);
+        //状态重置到上一次
+        sb.deleteCharAt(sb.length() - 1);
+    }
+}
+```
+
+### 复杂度分析
+
+- 时间复杂度：小于 $O(NlogL)$ ，其中 $N$ 为树中节点个数即遍历次数，$L$ 为字符串长度。遍历到叶子节点时需要对字符串进行翻转和比较，时间复杂度为 $O(L)$ ，最好情况下，二叉树是平衡的，$L = logN$ ，时间复杂度为 $O(NlogN)$ 。
+- 空间复杂度：$O(N)$ 。
+
