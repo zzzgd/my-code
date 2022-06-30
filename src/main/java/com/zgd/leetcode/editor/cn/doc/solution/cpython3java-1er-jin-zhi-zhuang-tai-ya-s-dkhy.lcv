@@ -1,0 +1,99 @@
+思路和心得：
+
+# （一）二进制，状态压缩
+
+* []
+
+```python3
+class Solution:
+    def maxNumberOfFamilies(self, n: int, reservedSeats: List[List[int]]) -> int:
+        mode_left = 0b00001111
+        mode_mid = 0b11000011
+        mode_right = 0b11110000
+
+        row_state = collections.defaultdict(int)
+        for r, c in reservedSeats:
+            if 2 <= c <= 9:
+                row_state[r] |= (1 << (c - 2))
+        
+        #----没被预约的行，可以放2个家庭
+        res = (n - len(row_state)) * 2
+        for r, state in row_state.items():
+            if (state | mode_left) == mode_left or (state | mode_mid) == mode_mid or (state | mode_right) == mode_right:
+                res += 1
+        return res
+```
+
+* []
+
+```c++
+class Solution 
+{
+public:
+    int maxNumberOfFamilies(int n, vector<vector<int>>& reservedSeats) 
+    {
+        int mode_left = 0b00001111;
+        int mode_mid = 0b11000011;
+        int mode_right = 0b11110000;
+
+        unordered_map<int, int> row_state;
+        for (auto reserve : reservedSeats)
+        {
+            int r = reserve[0],    c = reserve[1];
+            if (2 <= c && c <= 9)
+            {
+                row_state[r] |= (1 << (c - 2));
+            }
+        }
+
+        int res = (n - (int)row_state.size()) * 2;
+        for (auto [r, state] : row_state)
+        {
+            if ((state | mode_left) == mode_left || (state | mode_mid) == mode_mid || (state | mode_right) == mode_right)
+            {
+                res ++;
+            }
+        }
+        return res;
+    }
+};
+```
+
+* []
+
+```java
+class Solution 
+{
+    public int maxNumberOfFamilies(int n, int[][] reservedSeats) 
+    {
+        int mode_left = 0b00001111;
+        int mode_mid = 0b11000011;
+        int mode_right = 0b11110000;
+
+        Map<Integer, Integer> row_state = new HashMap<>();
+        for (int [] reserve : reservedSeats)
+        {
+            int r = reserve[0],    c = reserve[1];
+            if (2 <= c && c <= 9)
+            {
+                int state = row_state.getOrDefault(r, 0);
+                state |= (1 << (c - 2));
+                row_state.put(r, state);
+            }
+        }
+
+        int res = (n - row_state.size()) * 2;
+        for (Map.Entry<Integer, Integer> entry : row_state.entrySet())
+        {
+            int r = entry.getKey(),    state = entry.getValue();
+            if ((state | mode_left) == mode_left || (state | mode_mid) == mode_mid || (state | mode_right) == mode_right)
+            {
+                res ++;
+            }
+        }
+
+        return res;
+    }
+}
+```
+
