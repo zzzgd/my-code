@@ -1,0 +1,117 @@
+大家好，我是彤、，我的目标是做通俗易懂的题解，今天是我坚持写题解的第 163 天！
+
+![](https://pic.leetcode-cn.com/1642131590-gYhiJR-file_1642131597833)
+
+# 方法、优先级队列（堆）
+
+今天这道题最简单的办法就是把 nums1 和 nums2 两个数组的数两两组合，然后排个序，取前 k 个返回。
+
+然而，观察提示中的数据范围是 $10^4$，两两组合后的数据大小为 $10^8$，肯定会超时，所以，我们得想个办法优化一下。
+
+再观察题目约定了 **两个数组都是升序序列** ，所以，我们可以利用这个条件提高效率。
+
+我们可以使用优先级队列来实现，队列中保存的是 [index1, index2]，分别表示 nums1 的索引和 nums2 的索引，初始时把 [0,0]、[1, 0]、[2, 0]、…… 入队，即让 nums2 的索引全部从 0 开始，每次弹出 `nums1[index1] + nums2[index2]` 较小者。弹出之后，再把 index2 后移一位继续添加到优先级队列中，依次往复，最终弹出 k 次就是我们的结果。
+
+为什么这样是可行的？
+
+首先，利用两个数组都是升序的条件，结果中最小的组合肯定是 `nums1[0] + nums2[0]`。
+
+但是，**次小的是什么呢？** 是 `nums1[0] + nums2[1]` 还是 `nums1[1] + nums2[0]` 呢？我们不知道。
+
+所以，我们需要设计一种比较方式使我们能知道上述比较的结果，使用优先级队列就可以解决。
+
+假设，我们以 [0, 1] 表示 `nums1[0] + nums2[1]` 的结果，整个过程的处理如下：
+
+1. 先把所有的 nums1 的索引入队，即入队的元素有 [0, 0]、[1, 0]、[2, 0]、[3, 0]、......
+2. 首次弹出的肯定是 [0, 0]，再把 [0, 1] 入队；
+3. 这样就可以通过优先级队列比较 [0, 1] 和 [1, 0] 的结果，再弹出较小者；
+4. 依次进行，进行 k 轮。
+
+代码如下：
+
+* java
+
+```java
+class Solution {
+    public List<List<Integer>> kSmallestPairs(int[] nums1, int[] nums2, int k) {
+        // 优先级队列，保存 [index1, index2]
+        PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> nums1[a[0]] + nums2[a[1]] - (nums1[b[0]] + nums2[b[1]]));
+
+        // 把 nums1 的所有索引入队，nums2 的索引初始时都是 0
+        // 优化：最多入队 k 个就可以了，因为提示中 k 的范围较小，这样可以提高效率
+        for (int i = 0; i < Math.min(k, nums1.length); i++) {
+            heap.offer(new int[] {i, 0});
+        }
+
+        List<List<Integer>> ans = new ArrayList<>();
+
+        // 最多弹出 k 次
+        while (k-- > 0 && !heap.isEmpty()) {
+            int[] pos = heap.poll();
+
+            ans.add(Arrays.asList(nums1[pos[0]], nums2[pos[1]]));
+
+            // 将 index2 加 1 之后继续入队
+            if (++pos[1] < nums2.length) {
+                heap.offer(pos);
+            }
+        }
+
+        return ans;
+    }
+}
+```
+
+也可以声明一个数组保存 index1 到 index2 的映射，这样，优先级队列里面只需要保存 index1 即可，代码如下：
+
+* java
+
+```java
+class Solution {
+    public List<List<Integer>> kSmallestPairs(int[] nums1, int[] nums2, int k) {
+        // nums1对nums2的索引映射，index1->index2，初始值都是0
+        int[] indices2 = new int[nums1.length];
+
+        // 优先级队列，相加之和较小的排在前面
+        PriorityQueue<Integer> heap = new PriorityQueue<>((i, j) -> nums1[i] + nums2[indices2[i]] - (nums1[j] + nums2[indices2[j]]));
+
+        // 把nums1的索引都加入到优先级队列中
+        // 优化：最多加 k 个即可
+        for (int i = 0; i < Math.min(nums1.length, k); i++) {
+            heap.offer(i);
+        }
+
+        List<List<Integer>> ans = new ArrayList<>();
+
+        // 最多取 k 次
+        while (k-- > 0 && !heap.isEmpty()) {
+            // nums1的索引
+            int index1 = heap.poll();
+            // nums2的索引
+            int index2 = indices2[index1];
+            // 添加结果
+            ans.add(Arrays.asList(nums1[index1], nums2[index2]));
+
+            // 如果nums2的索引没到头，可以继续加入队列
+            if (++indices2[index1] < nums2.length) {
+                heap.offer(index1);
+            }
+        }
+
+        return ans;        
+    }
+}
+```
+
+- 时间复杂度：$O(k log k)$。
+- 空间复杂度：$O(k)$，方法二为 $O(max(k, m))$，m 为 nums1.length。
+
+运行结果如下：
+
+![image-20220114113653936](https://pic.leetcode-cn.com/1642131590-OuJVlP-file_1642131597847)
+
+# 最后
+
+**如果对你有帮助，请点个赞吧，谢谢^^**
+
+彤哥，工作快十年的后端开发，在团队中担任架构师的职责，目前在做《算法140讲》专栏，覆盖几乎所有刷题场景，同时会手写 150+ 道题的代码，教授如何写出优雅的代码，有兴趣的可以[关注我](https://img.oicoding.cn/img/20211226095624.png)（公号：彤哥来刷题啦），查看课程大纲。
