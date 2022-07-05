@@ -1,0 +1,41 @@
+### 解题思路
+
+简单思路：用栈留住前k个人，（容量为5的栈，前4个入栈的就出不来了），记忆化搜索 当前栈是否选中。
+
+### 代码
+
+* java
+
+```java
+class Solution {
+    static int ret, n, k;
+    static int[] c;
+    static long mod = (long)1e9 + 7;
+    static int[][] mark ;
+    public int securityCheck(int[] capacities, int k) {
+        this.k = k; //应该留住的人数量
+        c = capacities; //简化书写，免得传参
+        n = c.length; 
+        mark = new int[201][k + 1]; //记忆化
+        for(int[] e : mark)
+            Arrays.fill(e, -1); //-1表示 还没有对这个状态搜索过
+       
+        return find(0, 0); //从第0个开始决定是否把它作为栈来留人
+        
+    }
+    int find(int l, int sum){ //对第l 个安检进行抉择，此前已经留了sum个人了
+        if(l == n && sum == k) //最终时检查结果是否满足
+            return 1;
+        if(l >= n || sum > k)
+            return 0;
+        if(mark[l][sum] != -1)
+            return mark[l][sum];
+
+        int ans = find(l + 1, sum) + find(l + 1, sum + c[l] - 1); //c[i] - 1 可以留住容量 - 1个人
+        ans %= mod;
+        mark[l][sum] = ans;
+        return ans;
+    }
+}
+```
+

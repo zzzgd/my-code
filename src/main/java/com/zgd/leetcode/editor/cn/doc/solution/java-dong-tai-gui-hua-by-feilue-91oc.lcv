@@ -1,0 +1,27 @@
+本题需要注意到
+
+- **先进先出**的安检室并不会影响入场顺序
+- **后进先出**的安检室, 会将 $capacity - 1$ 个人留住， 即在后面的所有观众可以提前 $capacity - 1$ 位入场
+
+题目可以理解为：在默认全部为先进先出的情况下，通过将安检室改变为后进先出可以使入场顺序提前 $k - 1$ 个的背包问题
+
+* []
+
+```Java
+class Solution {
+    public int securityCheck(int[] capacities, int k) {
+        final int MOD = 1000000007;
+        int[] dp = new int[k + 1];
+        dp[0] = 1;
+
+        for(int c : capacities){
+            for(int j = k; j >= c - 1; j--){
+                dp[j] = (dp[j] + dp[j - c + 1]) % MOD;
+            }
+        }
+
+        return dp[k];
+    }
+}
+```
+
