@@ -1,0 +1,101 @@
+### 解题思路
+
+类似的数组字符分割求最大最小问题一般都可以通过递归枚举求解，通过枚举每一种分割情况来得到最终的最大值
+递归代码如下：
+
+* java
+
+```java
+class Solution {
+    public double largestSumOfAverages(int[] A, int K) {
+        return dfs(A, 0, K);
+    }
+    private double dfs(int A[] ,int index,int K){
+        if(K==0){
+            return 0.0;
+        }
+        if(K==1){// k=1时直接返回整个数组的均值
+            int sum = 0;
+            for(int i=index;i<A.length;i++){
+                sum+=A[i];
+            }
+            return (double)sum/(A.length-index);
+        }
+        double sum = 0.0;
+        double res = 0.0;
+        for(int i=index;i<=A.length-K;i++){
+            sum+=A[i];//枚举每个分离点
+            double avage = sum/(i-index+1);
+            double temp = dfs(A,i+1,K-1);//下一个组的均值
+            res = Math.max(res, avage+temp);//取最大
+        }
+        return (double)res;
+    }
+}
+```
+
+在本题中，递归会超时，一般情况下，递归都不是最优解，因为他会进行许多重复运算，所以，我们可以使用记忆化递归，所谓记忆化就是使用一个数组记录过已经得到的递归值，当再次进入该分支后可以快速得到解。
+在理解了上面的递归代码后稍微修改一下可以很容易得到记忆化递归代码
+
+* java
+
+```java
+class Solution {
+    double [][] memo ;
+    public double largestSumOfAverages(int[] A, int K) {
+        this.memo = new double [A.length+1][K+1];
+        return dfs(A, 0, K);
+    }
+    private double dfs(int A[] ,int index,int K){
+        if(K==0){
+            return 0.0;
+        }
+        if(memo[index][K]!=0.0)   return memo[index][K];
+        if(K==1){
+            int sum = 0;
+            for(int i=index;i<A.length;i++){
+                sum+=A[i];
+            }
+            memo[index][K] = (double)sum/(A.length-index);
+            return memo[index][K];
+        }
+        double sum = 0.0;
+        double res = 0.0;
+        for(int i=index;i<=A.length-K;i++){
+            sum+=A[i];
+            double avage = sum/(i-index+1);
+            // double temp = dfs(A,i+1,K-1);
+            // memo[i+1][K-1] = temp;
+            memo[i+1][K-1] = dfs(A,i+1,K-1);
+            res = Math.max(res, avage+memo[i+1][K-1]);
+        }
+        memo[index][K] =res;
+        return (double)res;
+    }
+}
+```
+
+记忆化递与动态规划其实十分相似，只是一个是自上而下打表，一个是自下而上打表,我们可以将记忆化递归改写为DP
+
+* java
+
+```java
+public double largestSumOfAverages(int[] A, int K) {
+        double[][] dp = new double[A.length+1][K+1];
+        double [] preSum = new double[A.length+1];
+        for(int i=0;i<A.length;i++){
+            preSum[i+1]= preSum[i]+A[i];
+            dp[i+1][1] = preSum[i+1]/(i+1);//初始化
+        }
+        for(int i=1;i<=A.length;i++){
+            for(int j=2;j<=Math.min(K, i);j++){
+                //dp[i][j]的最大均值 应该是 dp[i'][j-1]的均值+i'-i的均值和  中所有的可能中的最大值
+                for(int t = 0;t<i;t++){
+                    dp[i][j] = Math.max(dp[i][j], dp[t][j-1]+(preSum[i]-preSum[t])/(i-t));
+                }
+            }
+        }
+        return dp[A.length][K];
+    }
+```
+

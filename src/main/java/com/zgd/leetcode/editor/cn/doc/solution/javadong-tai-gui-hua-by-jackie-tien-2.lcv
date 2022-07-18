@@ -1,0 +1,34 @@
+### 解题思路
+
+转移方程：
+dp[k][i] = max{dp[k-1][j] + mean(j...i) for each j < i}
+
+### 代码
+
+* java
+
+```java
+class Solution {
+    public double largestSumOfAverages(int[] A, int K) {
+    int n = A.length;
+    double[][] dp = new double[K][n];
+    double sum = 0;
+    for (int i = 0; i < n; i++) {
+      sum += A[i];
+      dp[0][i] = sum / (i+1);
+    }
+
+    for (int k = 1; k < K; k++) {
+      for (int i = k; i < n; i++) {
+        sum = 0.0;
+        for (int j = i; j > k-1; j--) {
+          sum += A[j];
+          dp[k][i] = Math.max(dp[k][i], sum / (i-j+1) + dp[k-1][j-1]);
+        }
+      }
+    }
+    return dp[K-1][n-1];
+    }
+}
+```
+
