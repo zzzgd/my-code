@@ -97,7 +97,13 @@
   
 package com.zgd.leetcode.editor.cn;
 
+
+
+
+import org.junit.Test;
+
 import java.util.Stack;
+import java.util.regex.Pattern;
 
 public class LongestAbsoluteFilePath{
 
@@ -113,7 +119,7 @@ public class LongestAbsoluteFilePath{
   public static void main(String[] args) {
     Solution solution = new LongestAbsoluteFilePath().new Solution();
     //dir/subdir2/file.ext
-    solution.lengthLongestPath("dir\n\tsubdir1\n\tsubdir2\n\t\tfile.ext");
+    solution.lengthLongestPath("dir\\n\\tsubdir1\\n\\tsubdir2\\n\\t\\tfile.ext");
   }
   
   //leetcode submit region begin(Prohibit modification and deletion)
@@ -167,5 +173,32 @@ class Solution {
     }
 }
 //leetcode submit region end(Prohibit modification and deletion)
+
+    @Test
+    public void fun01(){
+      String str = "a\nbb\\nc0cc\\\ndddd\\\\neeee";
+
+        System.out.println("str = " + str);
+        /*
+        a
+        bb\ccc\
+        dddd\\neeee
+         */
+//        String[] ss = str.split("\n");  //["a", "bb\nccc\", "dddd\\neeee"]  不进
+//        String[] ss1 = str.split("\\n");  //["a", "bb\nccc\", "dddd\\neeee"]  进p
+//        String[] ss2 = str.split("\\\n");  //["a", "bb\nccc\", "dddd\\neeee"]  不进
+//        String[] ss3 = str.split("\\\\n");  //["a\nbb", "ccc\\ndddd\", "eeee"] 进
+        String[] ss = Pattern.compile("\n").split(str);  //["a", "bb\ccc\", "dddd\\neeee"]  不进
+        String[] ss1 = Pattern.compile("\\n").split(str);//["a", "bb\ccc\", "dddd\\neeee"]  进p
+        String[] ss2 = Pattern.compile("\\\n").split(str); //["a", "bb\ccc\", "dddd\\neeee"]  不进
+        String[] ss3 = Pattern.compile("\\\\n").split(str);  //["a\nbb", "ccc\\ndddd\", "eeee"] 进
+
+        String str1 = "\\nada";
+        System.out.println(str1.startsWith("\n")); //F
+        System.out.println(str1.startsWith("\\n")); //T
+        System.out.println(str1.startsWith("\\\n")); //F
+        System.out.println(str1.startsWith("\\\\n")); //F
+
+    }
 
 }
