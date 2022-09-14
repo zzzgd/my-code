@@ -1,0 +1,117 @@
+终于实现了cpu/memory双最优：
+
+![1.png](https://pic.leetcode-cn.com/1621433620-mzMXhv-1.png)
+
+======================================================
+最开始看这个题目成功率很低，想挑战一下。结果一看题目怎么这么”简单“。最先就遇到的两个坑：
+
+1. java 的 int相乘会溢出，整除1000000007得到负数
+2. 由于每次都对所有数据作运算，运行超时
+
+超时后想到了懒加载。在每次getIndex时计算并将中间结果缓存（下次再对它getIndex就可以节省时间)
+
+第一次提交成功时发现时间花了2700毫秒，还是只超过了15%的提交记录
+
+======================================================
+
+下面讲解一下我最终的提交的解题思路。
+
+1. 由于每次都是乘法和加法， 可以把所有的加法和乘法运算都综合成一次变换 y = ax + b. 程序里要维护这个a和b
+
+        每次加和乘都可以递推得到新的a和b.
+        (ax+b)*m = (ma)x + (bm)   (新的a 和 b 就是 am 和 bm)
+       
+        (ax+b)+m = ax + (b+m)   (新的a 和 b 就是 a 和 b+m)
+
+2. 把每次append的数字通过逆运算 （乘法取模运算的逆运算就是乘以它的逆元，加法的逆运算就是减) 得到它在最初应该是多少。就好像我们一开始就append它了一样。假设a的逆元是c:
+
+       append的这个val 转换成  (val-b)/a  ==> (val-b)*c
+
+3. 这个逆元c的计算也需要每次迭代求。和第一步里维护a和b同时进行。  
+   假设m的逆元是n,    如果a1 = a0 * m   则 c1=c0*n
+
+4. 第3步里m是小于100的整数，可以提前把100个逆元都算好，在multiAll的时候直接乘
+
+代码如下：
+
+* 
+
+```
+class Fancy {
+    private ArrayList<Integer> appendList = null; //每次append的数字 转换成最开始需要append的值
+    private int niyuan100[] = new int[101]; //100以内的逆元表
+    
+    private long GlobalAdd = 0;             //所有加乘结合在一起后，作为一个一次变换ax+b的b
+    private long GlobalMultiply = 1;        //所有加乘结合在一起后，作为一个一次变换ax+b的a
+    private long GlobalRevsersMultiply = 1; //a 关于模NUM的逆元
+    
+    private static int NUM = 1000000007;    
+    public Fancy() {
+        appendList = new ArrayList<Integer>();
+        niyuan100[0] = 0;
+        niyuan100[1] = 1;
+
+        //初始化前100个逆元表
+        for (int i=2;i<101;i++)
+        {
+        	niyuan100[i] = niyuan(NUM,i);
+        }
+    }
+    
+    public void append(int val) {
+        long result = ((val-GlobalAdd + NUM) * GlobalRevsersMultiply) % NUM; //把val转成初始值
+
+        appendList.add((int) result);
+    }
+    
+    public void addAll(int inc) {
+        GlobalAdd = (GlobalAdd + inc)%NUM;   //b = b + inc
+    }
+    
+    public void multAll(int m) {
+        //a = a*m  b=b*m  c=c/m
+       GlobalMultiply = (GlobalMultiply*m)%NUM;
+       GlobalAdd = (GlobalAdd*m)%NUM;
+       GlobalRevsersMultiply = (GlobalRevsersMultiply*niyuan100[m])%NUM;
+    }
+    
+    public int getIndex(int idx) {
+        //y=ax+b        
+        if (idx>=appendList.size())
+        {
+            return -1;
+        }
+        int b = appendList.get(idx);
+        long result = (GlobalMultiply*b+GlobalAdd)%NUM;
+        return (int)result;
+    }
+    
+	public static int niyuan(int a, int b) // 求a关于模b的乘法逆元, 扩展欧几里得算法
+	{
+		int[] m = { 1, 0, a };
+		int[] n = { 0, 1, b };
+		int[] temp = new int[3];
+		int q = 0; // 初始化
+		boolean flag = true;
+		while (flag) {
+			q = m[2] / n[2];
+			for (int i = 0; i < 3; i++) {
+				temp[i] = m[i] - q * n[i];
+				m[i] = n[i];
+				n[i] = temp[i];
+			}
+			if (n[2] == 1) {
+				if (n[1] < 0) {
+					n[1] = n[1] + a;
+				}
+				return n[1];
+			}
+			if (n[2] == 0) {
+				flag = false;
+			}
+		}
+		return 0;
+	}
+}
+```
+

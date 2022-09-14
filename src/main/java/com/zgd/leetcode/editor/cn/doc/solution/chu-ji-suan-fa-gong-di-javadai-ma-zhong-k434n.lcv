@@ -1,0 +1,186 @@
+# 阶段一
+
+这种题目为什么会是困难的？一个数组，每次遍历加或者乘不就ok了吗？
+
+minutes later，超时！105/107个用例。
+
+懂了，肯定是暴力破解代码被鄙视了，优化吧！
+
+# 阶段二
+
+灵光一闪，每次都要对数据进行加或者乘，但是并不是每个位置上的值最终都有机会被getIndex，不是浪费时间吗，所以，咚咚咚，懒加载吧。
+于是乎,傻傻的用了String，存下初始值以及后续的操作，等待getIndex的时候在算出结果呗，这有啥难的。
+
+* []
+
+```java
+ int length = 0;
+        int mod = 1_000_000_000 + 7;
+        String[] big = new String[100000];
+
+        public Fancy() {
+
+        }
+
+        public void append(int val) {
+            big[length++] = val + ",";
+        }
+
+        public void addAll(int inc) {
+            for (int i = 0; i < length; i++) {
+                big[i] = big[i] + "+" + inc + ",";
+            }
+        }
+
+        public void multAll(int m) {
+            for (int i = 0; i < length; i++) {
+                big[i] = big[i] + "-" + m + ",";
+            }
+        }
+```
+
+minutes later! 超时again，98/107。what the fxxk!!!!
+
+作为一个高级架构师，怎么可以忘记，String这玩意性能的问题呢，于是乎，信心满满，改进，舍弃String，用两个int数组来存，正数表示加，负数表示乘，看我多厉害
+
+* []
+
+```java
+int length = 0;
+        int mod = 1_000_000_000 + 7;
+        int[][] big = new int[100000][20];
+        int[] bp = new int[100000];
+
+        public Fancy() {
+
+        }
+
+        public void append(int val) {
+            big[length][0] = val;
+            bp[length++] = 1;
+        }
+
+        public void addAll(int inc) {
+            for (int i = 0; i < length; i++) {
+                big[i][bp[i]] = inc;
+                bp[i] = bp[i] + 1;
+                if (bp[i] == big[i].length) {
+                    int[] tmp = new int[2 * big[i].length];
+                }
+            }
+        }
+
+        public void multAll(int m) {
+            for (int i = 0; i < length; i++) {
+                big[i][bp[i]] = -m;
+
+            }
+        }
+```
+
+minutes later! 超时again and again，105/107。备受打击，还不如暴力算法呢。
+悲伤逆流成河，敢问桥在何方！
+
+# 阶段三
+
+作为算法渣渣，这个时候，我只能看别人的题解了，暗下决心，如果要搞什么动态规划，直接就放弃吧。然后我看到了一堆关键字，线段树，乘法逆元。sorry，哥真没听说过。看到一个java的提交，还要用什么费马小定理。
+
+是时候放弃了，goodb。。。等等。
+上面两段代码，还有没有优化的空间。当然有了，如果我不用string，不用二维数组，不用for loop来为每个append的数据来存后续的操作，而是把操作只存在一个地方，这不就是O(n*2)->O(n)吗？
+可是，如果只存一个地方，那append的原始数据怎么知道自己从那里开始add或者mutl呢？
+这种事只能自己记自己的呗，灵光乍现，代码奉上！！！
+
+* []
+
+```java
+int[] src = new int[100001];
+        int[] ops = new int[100001];
+        int mod = 1_000_000_000 + 7;
+        int l2 = 0;
+        public Fancy() {
+
+        }
+
+        public void append(int val) {
+
+            src[length++] = val + 100 * l2;
+        }
+
+        public void addAll(int inc) {
+            ops[l2++] = inc;
+
+        }
+
+        public void multAll(int m) {
+            ops[l2++] = -m;
+
+        }
+```
+
+毕竟知道1<val,inc,m<100,所以appen的实时，把后续操作的起始点乘以100记录下来，之后就可以计算了，正是加，负是乘。
+minutes later， 超时again三联。106/107.欣喜且绝望。
+
+我已经用了所有方法了。咋办。
+算了，死马当活马医吧，加个缓存试试，结果，那一刻，我看到了上帝的笑容。
+
+奉上最终的通过代码
+
+* java
+
+```java
+class Fancy {
+        int length = 0;
+        int[] src = new int[100001];
+        int[] ops = new int[100001];
+        int mod = 1_000_000_000 + 7;
+        int l2 = 0;
+        Map<Integer,Integer> cache=new HashMap<>();
+        public Fancy() {
+
+        }
+
+        public void append(int val) {
+
+            src[length++] = val + 100 * l2;
+        }
+
+        public void addAll(int inc) {
+            ops[l2++] = inc;
+            cache.clear();
+        }
+
+        public void multAll(int m) {
+            ops[l2++] = -m;
+            cache.clear();
+
+        }
+
+        public int getIndex(int idx) {
+            int result = -1;
+
+            if (idx < length) {
+                if(cache.containsKey(idx)){
+                    return cache.get(idx);
+                }
+                result = src[idx] % 100;
+                int op = src[idx] / 100;
+                for (int i = op; i < l2; i++) {
+                    int tmp = ops[i];
+                    if (tmp > 0) {
+                        result += tmp;
+                        if (result > mod) {
+                            result = result - mod;
+                        }
+                    } else {
+                        long tmp2 = Long.valueOf(result) * -tmp;
+                        tmp2=tmp2%mod;
+                        result = (int) tmp2;
+                    }
+                }
+                cache.put(idx,result);
+            }
+            return result;
+        }
+    }
+```
+

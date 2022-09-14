@@ -1,0 +1,107 @@
+### 解题思路
+
+无乘法逆元，绝望中通过了测试用例，从0/107到107/107。。。
+
+### 代码
+
+* java
+
+```java
+class Fancy {
+    // 数组
+	int[] list = new int[100000];
+	// 已经计算过的位置缓存
+	int[] listCache = new int[100000];
+	// 缓存值对应的操作长度
+	int[] oCache = new int[100000];
+	// 魔法值
+	int mod = 1000000007;
+	// 数组当前长度
+	int length = 0;
+	// 操作的长度
+	int oLength = 0;
+	// 操作值
+	int[] os = new int[100000];
+	// 操作类型 0=加法, 1=乘法
+	int[] oTypes = new int[100000];
+	// 操作list长度
+	int[] ols = new int[100000];
+	
+	public Fancy() {
+    }
+    
+    public void append(int val) {
+    	list[length] = val;
+    	length++;
+    }
+    
+    public void addAll(int inc) {
+    	os[oLength] = inc;
+    	oTypes[oLength] = 0;
+    	ols[oLength] = length;
+    	oLength++;
+    }
+    
+    public void multAll(int m) {
+    	os[oLength] = m;
+    	oTypes[oLength] = 1;
+    	ols[oLength] = length;
+    	oLength++;
+    }
+    
+    public int getIndex(int idx) {
+    	if (idx >= length) {
+    		return -1;
+    	}
+    	// 取缓存
+    	int val = listCache[idx];
+    	int cacheLength = 0;
+    	if (val == 0) {
+    		val = list[idx];
+    		val %= mod;
+    	} else {
+    		cacheLength = oCache[idx];
+    	}
+    	
+    	// 从缓存处开始计算
+    	for (int i = cacheLength; i < oLength; i++) {
+    		int ol = ols[i];
+    		if (idx >= ol) {
+    			// 取出位超过计算位置长度则不计算
+    			continue;
+    		}
+    		// 操作类型
+    		int o = oTypes[i];
+    		int v = os[i];
+    		if (o == 0) {
+    			// 加法
+    			val += v;
+    			val %= mod;
+    		} else {
+    			// 乘法转换为加法运算
+    			int add = val;
+    			for (int j = 0; j < v - 1; j++) {
+    				val += add;
+    				if (val > mod) {
+    					val -= mod;
+    				}
+    			}
+    		}
+    	}
+    	// 缓存计算过的路径和值
+    	listCache[idx] = val;
+    	oCache[idx] = oLength;
+    	return val;
+    }
+}
+
+/**
+ * Your Fancy object will be instantiated and called as such:
+ * Fancy obj = new Fancy();
+ * obj.append(val);
+ * obj.addAll(inc);
+ * obj.multAll(m);
+ * int param_4 = obj.getIndex(idx);
+ */
+```
+
