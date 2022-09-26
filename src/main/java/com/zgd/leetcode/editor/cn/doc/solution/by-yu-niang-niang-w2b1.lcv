@@ -1,0 +1,71 @@
+### L
+
+当时不会写，然后看过答案后写出，今天二刷写出来，学习题解：[2338. 统计理想数组的数目](https://leetcode.cn/problems/count-the-number-of-ideal-arrays/solution/shu-lun-zu-he-shu-xue-zuo-fa-by-endlessc-iouh/)
+
+### 方法：数学
+
+1. 本质是后缀和变形，此处其实是用积的方式来描述乘数，比如以6为末尾长度3： `[*2,*3,1]`,求前缀积得到 [2,6,6].所以可以通过枚举因子的位置得到总可能性。
+2. 枚举情况只与数量有关，和值无关。比如上述的 6， 有因子 2 和 3，2 可以放在3个位置的任何一个，也就是 C[3,1]，3 也可以放在 3 个位置任何一个，也就是 C[3,1]，所以我们仅仅需要记录数目，而无需记录因子具体的值
+3. 静态代码块可优先处理好组合数信息，可用杨辉三角先算出各种组合数（最多选13个，因为2的13次方是8192，再大超过数值范围，不会出现）
+4. 对于某个数的各个质数因子
+   - 相同因子cnt个的选择是 n-1+cnt 选 cnt，因为相同的因子可以放在同一个格子，相当于是 n-1个隔板和 cnt个因子合起来的排列情况，C(n-1+cnt,cnt)
+   - 不同因子之间选择互相不影响，是相乘的关系
+5. 质数的处理：对于质数，实际上是1*自身的放置位置问题，实际上就是因子可以选自己，共 1 种选择
+6. 1 的处理： 末尾为 1 的情况只有一种，记录为 1
+7. 组合数处理
+   - 可用杨辉三角计算组合数，每列开头设置为 1【C[X][0]=1】，其他为上层的两个数相加，注意，列数最多堆叠到 13（这里取了14，其实 13 够了），列数最大取 i 和 13 的较小值
+   - 由于使用了杨辉三角用加法，可以相加后直接取余，避免乘积过大的情况
+
+* java
+
+```java
+class Solution {
+        static final int SELECT = 14;
+        static final int TOTAL = (int) (1e4+SELECT+1);
+        static final long[][] C = new long[TOTAL][SELECT+1];
+        static final int MOD = (int) (1e9+7);
+        static final List<List<Integer>> factors = new ArrayList<>();
+        static{
+            factors.add(new ArrayList<>());
+            factors.add(Arrays.asList(1));
+            for(int i = 2; i <= (int)1e4; i++){
+                List<Integer> list = new ArrayList<>();
+                int tmp = i;
+                for(int j = 2; tmp>=j;j++){
+                    int cnt = 0;
+                    while (tmp%j==0){
+                        ++cnt;
+                        tmp = tmp/j;
+                    }
+                    if(cnt>0) list.add(cnt);
+                }
+                if(list.isEmpty()) list.add(1);
+                factors.add(list);
+            }
+
+            C[0][0]=1;
+            for(int i = 1; i < TOTAL; i++){
+                C[i][0]=1;
+                for(int j = 1; j <= Math.min(i,SELECT); j++){
+                    C[i][j]=(C[i-1][j-1]+C[i-1][j])%MOD;
+                }
+            }
+
+        }
+    public int idealArrays(int n, int maxValue) {
+        long ans = 1;
+        for(int i = 2; i <= maxValue; i++){
+            long curr = 1;
+            for(int f:factors.get(i)){
+                curr*= C[n+f-1][f];
+                curr = curr%MOD;
+            }
+            ans += curr;
+            ans = ans % MOD;
+
+        }
+        return (int) ans;
+    }
+}
+```
+

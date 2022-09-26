@@ -1,0 +1,49 @@
+参考思路:
+https://www.bilibili.com/video/BV1we4y1R7ZG?vd_source=2b856b7f53afc4c50b68191d31b489e3
+
+* 
+
+```
+class Solution {
+//思路是先确定答案的序列中可以有哪些不同的数，每一个方案的不同数字的个数对应的组合数可累加到答案
+    static final int mod=(int)1e9+7;
+    static final int[][]c=new int[10001][14];
+    static{
+        for(int i=0;i<=10000;i++){
+            for(int j=0;j<=i&&j<14;j++){
+                if(j==0){
+                    c[i][j]=1;
+                }else{
+                    c[i][j]=(c[i-1][j]+c[i-1][j-1])%mod;
+                }
+            }
+        }//预处理组合数,防止爆内存 c[i][j]表示 i个数里面选j个的排列方案
+    }
+
+    public int idealArrays(int n, int maxValue) {
+        int[][]f=new int[maxValue+1][15];
+        for(int i=0;i<=maxValue;i++){
+            f[i][1]=1;
+        }
+        // f[i][j]表示以为 i 结尾,有j个不同数的方案
+        //由 数据范围可以知道
+        //1e5个数里面最多会有14个不同的数,组成前一个数为后一数因子的序列(1,2,4...8192(2^13))
+        for(int j=1;j<14;j++)
+            for(int k=1;k<=maxValue;k++){
+                for(int m=2;m*k<=maxValue;m++){
+                    f[m*k][j+1]=(f[m*k][j+1]+f[k][j])%mod;
+                }
+            }
+        }//预处理f数组
+
+        long res=0;
+        for(int i=1;i<=maxValue;i++){
+            for(int j=1;j<=14&&j<=n;j++){
+                res=(res+(long)f[i][j]*c[n-1][j-1])%mod;
+            }
+        }
+        return (int)res;
+    }
+}
+```
+
