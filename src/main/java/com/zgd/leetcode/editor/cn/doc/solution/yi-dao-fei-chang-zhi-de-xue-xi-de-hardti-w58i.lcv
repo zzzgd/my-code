@@ -1,0 +1,265 @@
+### 解题思路
+
+总体来讲，这是一道非常值得学习的hard题！为什么说它是一道非常值得学习的hard题呢？因为它有以下几大知识点：
+1. 如何将一个问题抽象成图的问题？
+2. 如何建图？
+3. 如何解决无向图里的最短路径问题
+
+下面，我们就来一个一个解决这三问题。
+
+### 1. 如何将一个问题抽象成图的问题？
+
+首先，如何将一个问题抽象成图的问题。我们知道图是由若干点和若干点之间的边组成的(ps.好像这个说了也没啥用咳咳)。在解决这个问题前，我们可以从**元素间的关系**这个角度来着手解决问题。我们知道数据结构中可以划分为三大类：线性表、树、图(树和图有时也统称为非线性表)。一般，**在线性表中，元素之间没什么关系**。在这个题中，很明显单词之间是有关系的(最多一个单词差异)。那么元素之间有关系的数据结构只有树和图了，**但树之间的元素一般是层次关系，所以显然，这个题用图来解决**。
+
+### 2. 如何建图？
+
+我们知道这个是图的问题之后，那么如何建图呢？是建有向图还是无向图呢？很明显，这个是无向图。其实不管是无向图和有向图，建图的方式就是两种：邻接表和邻接矩阵。这两个概念大家应该都知道。**在这个题里，邻接表和邻接矩阵都可以，不用考虑元素是否稀疏。我用的是邻接表的方式**。先上代码。
+
+* 
+
+```
+public List<List<String>> findLadders(String beginWord, String endWord, List<String> wordList) {
+        //使用hashmap是为了建立单词在邻接表中的下标，以此来表征每个单词
+        HashMap<String,Integer>word_index=new HashMap<>();
+        for (int i = 0; i <wordList.size() ; i++) {
+            word_index.put(wordList.get(i),i);
+        }
+        //这里需要注意的是beginWord可能不在wordList中，如果不在需要添加进去
+        List<String>newWordList=new ArrayList<>(wordList);
+        if(!word_index.containsKey(beginWord)){
+            word_index.put(beginWord,wordList.size());
+            newWordList.add(beginWord);
+        }
+        //构建邻接表并初始化
+        List<List<Integer>>graph=new LinkedList<>();
+        for (int i = 0; i <newWordList.size() ; i++) {
+            graph.add(new ArrayList<>());
+        }
+        //邻接表填值
+        for (int i = 0; i <newWordList.size() ; i++) {
+            for (int j = 0; j < newWordList.size(); j++) {
+                 if(i!=j&&onlyOneDiff(newWordList.get(i),newWordList.get(j))){
+                     graph.get(i).add(j);
+                 }
+            }
+        }
+
+        ......
+
+        private boolean onlyOneDiff(String word1,String word2){
+        int count=0;
+        for (int i = 0; i <word1.length() ; i++) {
+            if(word1.charAt(i)!=word2.charAt(i)){
+                count++;
+            }
+            if(count>=2){
+                return false;
+            }
+        }
+        return true;
+    }
+```
+
+### 3. 如何解决无向图里的最短路径问题？
+
+在建图了之后，如何找到最短路径问题。这里应该要更具体一些，叫**单源最短路径问题**。对于单源路径问题，大家就不会陌生了吧，第一印象是不是想的就是图的Dijsktra算法。**Dijsktra算法一般用于有权图，用在这里就大材小用了**(虽然也可以将每个边的权重看为1)，对于无权图(即每个边的权重可以看为1)，这里我们直接使用BFS就可以解决问题。写过BFS的同学应该知道，**BFS用来找最短的路径长度很好写，按照模板写就好。但是怎么记录最短路径呢**？这里我起初也不知道，直到看了题解区里的一篇题解，“**通过引入节点类，在这个节点里记录上一个节点**”。我觉得这个方式又简便又好用，话不多说，上代码：
+
+* 
+
+```
+        //bfs找到到达endWord的所有路径，这里不是最短路径哦
+        Queue<Node>queue=new LinkedList<>();
+        boolean visited[]=new boolean[newWordList.size()];
+        int start=word_index.get(beginWord);
+        queue.add(new Node(beginWord,start,null));
+        while (!queue.isEmpty()){
+            int size=queue.size();
+            for (int i = 0; i <size ; i++) {
+                Node cur=queue.poll();
+                visited[cur.index]=true;
+                if(cur.word.equals(endWord)){
+                    ends.add(cur); //记录endWord最终节点,可能有多个路径，
+                }
+                for(int ele:graph.get(cur.index)){
+                    if(!visited[ele]&&onlyOneDiff(cur.word,newWordList.get(ele))){
+                        queue.add(new Node(newWordList.get(ele),ele,cur));
+                    }
+                }
+            }
+        }
+        //通过endWord节点反推路径
+        for(Node node:ends){
+            List<String>tmp=new ArrayList<>();
+            while (node.prev!=null){
+                tmp.add(0,node.word);
+                node=node.prev;
+            }
+            tmp.add(0,beginWord);
+            
+            paths.add(tmp);  
+        }
+        return paths;
+    }
+    private boolean onlyOneDiff(String word1,String word2){
+        int count=0;
+        for (int i = 0; i <word1.length() ; i++) {
+            if(word1.charAt(i)!=word2.charAt(i)){
+                count++;
+            }
+            if(count>=2){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    class Node{
+        String word;
+        int index;
+        Node prev;
+        public Node(String word,int index,Node prev){
+            this.prev=prev;
+            this.index=index;
+            this.word=word;
+        }
+    }
+```
+
+**这里bfs的写法为什么不是最短路径呢**？如果有同学对BFS解决最短路径长度的模板不认真思考的话，这里可能就掉坑里了，为什么BFS可以轻松解决“最短路径长度”的问题，因为BFS的核心是按照层次遍历，按照每层每层的去遍历，最先访问到目标节点的长度肯定是最短的。但是这里的写法，并不是第一次找到endWord我就停止遍历了，我还是继续寻找。**因为最短路径不只一个，如果停止寻找，会找不全**。那么如何**找到具有最短路径长度的最短路径呢**？这不就是多解决一个最短路径长度问题吗？所以这时，会不会有同学说这个题我闭着眼睛就会写，但是真的吗？=.= 这里还是有不同的！我们熟知的BFS解决最短路径长度问题的写法是找到最短路径便return了，但是这里你可以直接return吗？🤔️，动动脑瓜子，是不是不可以，所以呢，这里要用两个变量，去记录最短的路径长度。step记录访问到endWord的路径长度，因为这个路径有多个，所以我们要用miniumStep去记录最短的那个路径长度。
+
+* 
+
+```
+    List<List<String>>paths=new ArrayList<>();
+    List<Node>ends=new ArrayList<>();
+    //bfs找到最短路径及最短路径的长度
+    Queue<Node>queue=new LinkedList<>();
+    boolean visited[]=new boolean[newWordList.size()];
+    int start=word_index.get(beginWord);
+    queue.add(new Node(beginWord,start,null));
+    int miniumStep=Integer.MAX_VALUE;
+    int step=1;
+    while (!queue.isEmpty()){
+        int size=queue.size();
+        for (int i = 0; i <size ; i++) {
+            Node cur=queue.poll();
+            visited[cur.index]=true;
+            if(cur.word.equals(endWord)){
+                ends.add(cur);
+                miniumStep=Math.min(step,miniumStep);
+            }
+            for(int ele:graph.get(cur.index)){
+                if(!visited[ele]&&onlyOneDiff(cur.word,newWordList.get(ele))){
+                    queue.add(new Node(newWordList.get(ele),ele,cur));
+                }
+            }
+        }
+        step++;
+    }
+    for(Node node:ends){
+        List<String>tmp=new ArrayList<>();
+        while (node.prev!=null){
+            tmp.add(0,node.word);
+            node=node.prev;
+        }
+        tmp.add(0,beginWord);
+        if(tmp.size()==miniumStep){
+            paths.add(tmp);
+        }
+    }
+    return paths;
+}
+```
+
+### 最后，最终的代码
+
+* java
+
+```java
+class Solution {
+   public List<List<String>> findLadders(String beginWord, String endWord, List<String> wordList) {
+        HashMap<String,Integer>word_index=new HashMap<>();
+        for (int i = 0; i <wordList.size() ; i++) {
+            word_index.put(wordList.get(i),i);
+        }
+        List<String>newWordList=new ArrayList<>(wordList);
+        if(!word_index.containsKey(beginWord)){
+            word_index.put(beginWord,wordList.size());
+            newWordList.add(beginWord);
+        }
+        List<List<Integer>>graph=new LinkedList<>();
+        for (int i = 0; i <newWordList.size() ; i++) {
+            graph.add(new ArrayList<>());
+        }
+        for (int i = 0; i <newWordList.size() ; i++) {
+            for (int j = 0; j < newWordList.size(); j++) {
+                 if(i!=j&&onlyOneDiff(newWordList.get(i),newWordList.get(j))){
+                     graph.get(i).add(j);
+                 }
+            }
+        }
+        List<List<String>>paths=new ArrayList<>();
+        List<Node>ends=new ArrayList<>();
+        //bfs找到最短路径及最短路径的长度
+        Queue<Node>queue=new LinkedList<>();
+        boolean visited[]=new boolean[newWordList.size()];
+        int start=word_index.get(beginWord);
+        queue.add(new Node(beginWord,start,null));
+        int miniumStep=Integer.MAX_VALUE;
+        int step=1;
+        while (!queue.isEmpty()){
+            int size=queue.size();
+            for (int i = 0; i <size ; i++) {
+                Node cur=queue.poll();
+                visited[cur.index]=true;
+                if(cur.word.equals(endWord)){
+                    ends.add(cur);
+                    miniumStep=Math.min(step,miniumStep);
+                }
+                for(int ele:graph.get(cur.index)){
+                    if(!visited[ele]&&onlyOneDiff(cur.word,newWordList.get(ele))){
+                        queue.add(new Node(newWordList.get(ele),ele,cur));
+                    }
+                }
+            }
+            step++;
+        }
+        for(Node node:ends){
+            List<String>tmp=new ArrayList<>();
+            while (node.prev!=null){
+                tmp.add(0,node.word);
+                node=node.prev;
+            }
+            tmp.add(0,beginWord);
+            if(tmp.size()==miniumStep){
+                paths.add(tmp);
+            }
+        }
+        return paths;
+    }
+    private boolean onlyOneDiff(String word1,String word2){
+        int count=0;
+        for (int i = 0; i <word1.length() ; i++) {
+            if(word1.charAt(i)!=word2.charAt(i)){
+                count++;
+            }
+            if(count>=2){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    class Node{
+        String word;
+        int index;
+        Node prev;
+        public Node(String word,int index,Node prev){
+            this.prev=prev;
+            this.index=index;
+            this.word=word;
+        }
+    }
+}
+```
+

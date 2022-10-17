@@ -1,0 +1,74 @@
+### 解题思路
+
+思路就是BFS遍历，因为要记录路径，可以设置一个数据结构保存单词以及前驱
+
+### 代码
+
+* java
+
+```java
+class Solution {
+
+    static class Node {
+        String word;
+        Node prev;
+        public Node(String word, Node prev) {
+            this.word = word;
+            this.prev = prev;
+        }
+    }
+
+    public List<List<String>> findLadders(String beginWord, String endWord, List<String> wordList) {
+        Set<String> dict = new HashSet<String>(wordList);
+
+
+        List<List<String>> res = new ArrayList<>();
+        if (!dict.contains(endWord)) return res;
+
+        Deque<Node> queue = new LinkedList<>(); // BFS辅助队列
+        List<Node> ends = new ArrayList<>(); // 存储所有终点
+        Set<String> visited = new HashSet<>(); // 防止走回头路
+        queue.add(new Node(beginWord, null));
+
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                Node cur = queue.removeFirst();
+                String w = cur.word;
+                visited.add(w);
+                if (w.equals(endWord)) {
+                    ends.add(cur);
+                }
+                for (String s : wordList) {
+                    if (!visited.contains(s) && checkSimilar(w, s)) {
+                        queue.addLast(new Node(s, cur));
+                    }
+                }
+            }
+            if (ends.size() > 0) break;
+        }
+
+        for (Node node : ends) {
+            List<String> temp = new ArrayList<>();
+            while (node.prev != null) {
+                temp.add(0, node.word);
+                node = node.prev;
+            }
+            temp.add(0, beginWord);
+            res.add(temp);
+        }
+        return res;
+    }
+
+    private boolean checkSimilar(String s1, String s2) {
+        if (s1.length() != s2.length()) return false;
+        int diff = 0;
+        for (int i = 0; i < s1.length(); i++) {
+            if (s1.charAt(i) == s2.charAt(i)) continue;
+            diff++;
+        }
+        return diff == 1;
+    }
+}
+```
+

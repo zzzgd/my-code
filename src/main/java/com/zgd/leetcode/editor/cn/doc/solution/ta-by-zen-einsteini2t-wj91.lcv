@@ -1,0 +1,90 @@
+![Screen Shot 2022-09-29 at 22.06.50.png](https://pic.leetcode-cn.com/1664460460-xGScSp-Screen%20Shot%202022-09-29%20at%2022.06.50.png)
+
+### 解题思路
+
+talk is cheap,  show me the code
+
+### 代码
+
+* java
+
+```java
+class Solution {
+    public List<List<String>> findLadders(String beginWord, String endWord, List<String> wordList) {
+        List<List<String>> res = new ArrayList<>();
+        Set<String> set = new HashSet<>(wordList);
+        if (!set.contains(endWord)) {
+            return res;
+        }
+        boolean finish = false;      
+        Map<String, Set<String>> pathMap = new HashMap<>();
+        Set<String> visited = new HashSet<>();
+        Queue<String> queue = new LinkedList<>();
+        queue.offer(beginWord);
+        visited.add(beginWord);
+        while (queue.size() > 0) {
+            int size = queue.size();
+            Set<String> curSet = new HashSet<>();
+            while (size-- > 0) {
+                String str = queue.poll();
+                if (str.equals(endWord)) {
+                    finish = true;
+                    break;
+                }
+                char[] cur = str.toCharArray();
+                for (int i = 0; i < beginWord.length(); i++) {
+                    for (int j = 0; j < 26; j++) {
+                        cur[i] = nextChar(cur[i]);
+                        String next = new String(cur);
+                        if (set.contains(next) && !visited.contains(next)) {
+                            if (!curSet.contains(next)) {
+                                queue.offer(next);
+                                curSet.add(next);
+                            }
+                            if (pathMap.containsKey(next)) {
+                                pathMap.get(next).add(str);
+                            } else {
+                                Set<String> tmp = new HashSet<>();
+                                tmp.add(str);
+                                pathMap.put(next, tmp);
+                            }
+                        }
+                    }
+                }
+            }
+            visited.addAll(curSet);
+            if (finish) {
+                break;
+            }
+        }
+        if (finish) {
+            List<String> list = new ArrayList<>();
+            list.add(endWord);
+            dfs(res, pathMap, endWord, beginWord, list);
+        }
+        return res;
+    }
+
+    public void dfs(List<List<String>> res, Map<String, Set<String>> pathMap, String curWord, String target, List<String> list) {
+        if (curWord.equals(target)) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+
+        for (String next : pathMap.get(curWord)) {
+            list.add(0, next);
+            dfs(res, pathMap, next, target, list);
+            list.remove(0);
+        }
+    }
+
+    public char nextChar(char ch) {
+        if (ch == 'z') {
+            return 'a';
+        } else {
+            return (char) (ch + 1);
+        }
+    }
+}
+```
+
