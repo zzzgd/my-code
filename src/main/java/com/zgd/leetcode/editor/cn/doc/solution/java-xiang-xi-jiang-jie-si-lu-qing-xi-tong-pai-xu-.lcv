@@ -1,0 +1,56 @@
+![...164 Maximum Gap.mp4](https://leetcode.cn/problems/maximum-gap/solution/java-xiang-xi-jiang-jie-si-lu-qing-xi-tong-pai-xu-/04a2d3f7-d709-469e-9fe2-e8d32a63934d)
+
+### 更多题解还请看个人主页
+
+<br> 参考 windliang[题解](https://leetcode-cn.com/problems/maximum-gap/solution/xiang-xi-tong-su-de-si-lu-fen-xi-duo-jie-fa-by--39/) </br>
+
+<br> 相似桶排序题目， 请看视频题解 [220 Contain Duplicates III](https://www.bilibili.com/video/BV1fK411N7tU) </br>
+
+### 代码
+
+* java
+
+```java
+class Solution {
+    public int maximumGap(int[] nums) {
+        if(nums.length <= 1)        return 0;
+        int n = nums.length;
+        
+        int max = -1, min = Integer.MAX_VALUE;
+        for(int i = 0; i < nums.length; i++)
+        {
+            max = Math.max(nums[i], max);
+            min = Math.min(nums[i], min);
+        }
+        if(max - min == 0)      return 0;   //1,1,1,1
+
+        int[] bucketMin = new int[n-1];
+        int[] bucketMax = new int[n-1];
+        Arrays.fill(bucketMax, -1);
+        Arrays.fill(bucketMin, Integer.MAX_VALUE);
+
+        //
+        int interval = (int) Math.ceil((double)(max - min) / (n - 1));
+        for(int i = 0; i < nums.length; i++)
+        {
+            int ID = (nums[i] - min) / interval;
+            if(nums[i] == min || nums[i] == max)    continue;
+            bucketMax[ID] = Math.max(bucketMax[ID], nums[i]);
+            bucketMin[ID] = Math.min(bucketMin[ID], nums[i]);
+        }
+
+        int maxGap = 0; int previousMax = min;
+        for(int i = 0; i < n - 1; i++)
+        {
+            if(bucketMax[i] == -1)     continue;
+            maxGap = Math.max(bucketMin[i] - previousMax, maxGap);
+            previousMax = bucketMax[i];
+        }
+
+        //1, 100000
+        maxGap = Math.max(maxGap, max - previousMax);
+        return maxGap;
+    }
+}
+```
+
