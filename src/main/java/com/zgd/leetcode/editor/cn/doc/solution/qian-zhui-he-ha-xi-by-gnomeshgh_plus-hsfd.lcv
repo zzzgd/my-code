@@ -1,0 +1,95 @@
+## 初级版本
+
+* 使用哈希表存放每个元素所对应的下标，键是每个出现的元素，值是这个元素出现的下标，使用list数组进行存放。
+* 从前往后遍历，找到每个值对应出现的所有下标，根据这些下标求距离。
+
+### Java代码：
+
+* java
+
+```java
+public long[] getDistances(int[] arr) {
+    Map<Integer, List<Integer>> m = new HashMap<>();
+    int length = arr.length;
+    long[] re = new long[length];
+    
+    for (int i = 0; i < length; i++) {
+        List<Integer> orDefault = m.getOrDefault(arr[i], new ArrayList<>());
+        int size = orDefault.size();
+        for (int j = 0; j < size; j++) {
+            re[orDefault.get(j)] += i - orDefault.get(j);
+            re[i] += i-orDefault.get(j);
+        }
+        orDefault.add(i);
+        m.put(arr[i], orDefault);
+    }
+    return re;
+}
+```
+
+* 超时~
+* 可以看出，这里的重复计算是非常多的。
+
+## 引入前缀和
+
+* 使用re1数组表示前缀和，re2数组表示后缀和
+* re1[i]表示arr[i]之前所有等于arr[i]的元素到arr[i]的距离
+* re2[i]表示arr[i]之后所有等于arr[i]的元素到arr[i]的距离
+* 那么我们要求的re数组就满足这种关系：re[i] = re1[i] + re2[i]
+
+---
+
+* 那么前缀和怎么求
+* 根据定义，我们可以得知，re1[i] = 前一个与arr[i]相同的值对应的re[pro] + 前一个到当前这个的距离 × 个数。如图所示：
+  ![image.png](https://pic.leetcode-cn.com/1640492594-yjRwmA-image.png)
+
+  re1[i] = re1[pro] + (距离)*个数
+
+* 这样我们得到这个转移公式之后，就不需要使用循环一个一个计算了，一步得出结果。
+* 同理，后缀也是一样的道理。这样我们就将复杂度降下去了。
+
+---
+
+* 那么怎么实现这个算法呢？
+
+首先肯定是需要使用到哈希表，但是这时候我们保存的“值”就不再是一个list了，可以换成两个数字，val[0]表示key前一次出现的下标，val[1]表示key出现了多少次即可。这样我们就可以实现这个算法啦~~
+
+* java
+
+```java
+public long[] getDistances(int[] arr) {
+    //前缀，<key,val>表示值为key的前面一个相同的下标为val[0]，相同的个数为val[1]
+    Map<Integer, int[]> m1 = new HashMap<>();
+    int n = arr.length;
+    long[] re1 = new long[n];
+    for (int i = 0; i < n; i++) {
+        int[] orDefault = m1.getOrDefault(arr[i], new int[2]);
+        //当其前面有与他下相同的时候。相同的下标为ordefaule[0],相同了几个为orderfault[1]
+        if (orDefault[1] != 0) {
+            re1[i] += re1[orDefault[0]] + (i - orDefault[0]) * orDefault[1];
+        }
+        orDefault[0] = i;
+        orDefault[1]++;
+        m1.put(arr[i], orDefault);
+    }
+    //后缀
+    Map<Integer, int[]> m2 = new HashMap<>();
+    long[] re2 = new long[n];
+    for (int i = n - 1; i >= 0; i--) {
+        int[] orDefault = m2.getOrDefault(arr[i], new int[2]);
+        //当其后面有与他下相同的时候。相同的下标为ordefaule[0],相同了几个为orderfault[1]
+        if (orDefault[1] != 0) {
+            re2[i] += re2[orDefault[0]] + (orDefault[0] - i) * orDefault[1];
+        }
+        orDefault[0] = i;
+        orDefault[1]++;
+        m2.put(arr[i], orDefault);
+    }
+    long[] re = new long[n];
+    for (int i = 0; i < n; i++) {
+        re[i] = re1[i]+re2[i];
+    }
+    return re;
+}
+```
+
