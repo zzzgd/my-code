@@ -1,0 +1,26 @@
+* 
+
+```
+select
+b.id                                                    id
+,b.visit_date                                           visit_date
+,b.people                                               people
+from(                                                   
+        select
+        a.id                                            id
+        ,a.visit_date                                   visit_date
+        ,a.people                                       people
+        ,count(id) over(partition by a.constant_label)  constant_number #计算连续id的个数，每组连续性标签内id个数表示对应id连续的个数
+        from(
+                select 
+                id                                      id
+                ,visit_date                             visit_date
+                ,people                                 people
+                ,id- row_number() over(order by id)     constant_label #连续性标签，id减去id排序，结果相同代表对应id是互相连续的
+                from Stadium
+                where people >= 100
+            ) a
+    )  b
+where b.constant_number >= 3  #筛选出连续id个数大于3的连续id
+```
+

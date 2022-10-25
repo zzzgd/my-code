@@ -1,0 +1,81 @@
+### 解题思路
+
+关键：id前中后三个连续且大于等于100。
+分成3种解题思路：
+1. 根据id连续分三种情况再查看people情况，可以查看代码1和4
+2. 根据people大于99分区，然后再查看id连续情况，可以查看代码3
+3. 根据id连续分区，在统计分区内>=100个数是否满足条件，可以查看代码2
+
+### 代码1
+
+* mysql
+
+```mysql
+select id,  visit_date, people 
+from
+(   select id,  visit_date, people,
+    lead(people, 1) over(order by id) as lead1,
+    lead(people, 2) over(order by id) as lead2,
+    lag(people, 1) over(order by id) as lag1,
+    lag(people, 2) over(order by id) as lag2
+from Stadium) as t
+where (people >= 100 and lead1 >= 100 and lag1 >= 100) or  
+    (people >= 100 and lead1 >=100 and lead2>=100) or  
+    (people >= 100 and lag1 >=100 and lag2 >= 100)
+```
+
+### 代码2
+
+* mysql
+
+```mysql
+select id, visit_date, people
+from (
+    select id, visit_date, people, count(*) over(partition by tag) as ktag
+    from (
+        select *, id - row_number() over(order by id) as tag
+        from stadium
+        where people >= 100) as t) as y
+where ktag>=3
+```
+
+### 代码3
+
+* mysql
+
+```mysql
+select distinct s.* 
+from stadium s,
+    (select id,
+            visit_date,
+            people,
+            (@cnt:=IF(people>99,@cnt+1,0)) as cnt 
+            from stadium,(select @cnt:=0) b) c 
+where c.cnt>2 and s.id between c.id-c.cnt+1 and c.id
+```
+
+### 代码4
+
+* mysql
+
+```mysql
+select distinct id, visit_date , people  
+from (
+select a.*
+from stadium a, stadium b,stadium c
+where (a.id = b.id - 1 and b.id = c.id - 1 and
+        a.people >= 100 and b.people >= 100 and c.people >= 100)
+union all
+select b.*
+from stadium a, stadium b,stadium c
+where (b.id = a.id + 1 and b.id = c.id - 1 and
+        a.people >= 100 and b.people >= 100 and c.people >= 100)
+union all
+select a.*
+from stadium a, stadium b,stadium c
+where (a.id = b.id + 1 and b.id = c.id + 1 and
+        a.people >= 100 and b.people >= 100 and c.people >= 100)) as t
+order by visit_date
+```
+
+![image.png](https://pic.leetcode-cn.com/1632330804-tDzINt-image.png)
