@@ -1,0 +1,28 @@
+### 解题思路
+
+记以零结尾的没有先导0的不重复数目为ends0，以1结尾的没有先导0的为ends1。
+如果遇到0，0可以加入到所有ends0，ends1结尾的子序列，毕竟变长了。所以有ends0 = ends0 + ends1，ends1不变
+如果遇到1，1可以加入到所有ends0，ends1结尾的子序列，同时1可以单独存在，所以有ends1 = ends0 + ends1 + 1，ends0不变
+所求答案就是ends0 + ends1，题目说单独的0也可以，所以最终答案是 ends1 + ends2 + has0
+
+### 代码
+
+* java
+
+```java
+class Solution {
+    public int numberOfUniqueGoodSubsequences(String binary) {
+        int mod = 1000000007, ends0 = 0, ends1 = 0, has0 = 0;
+        for (int i = 0; i < binary.length(); ++i) {
+            if (binary.charAt(i) == '1') {
+                ends1 = (ends0 + ends1 + 1) % mod;
+            } else {
+                ends0 = (ends0 + ends1) % mod;
+                has0 = 1;
+            }
+        }
+        return (ends0 + ends1 + has0) % mod;
+    }
+}
+```
+
