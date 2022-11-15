@@ -1,0 +1,72 @@
+思路 参考了这一篇 [python代码](https://leetcode-cn.com/circle/discuss/CwhuIe/view/JsFTBf/)
+- 对于每一个targetGrid中的值val，记录下该值出现的最左最右最上最下边界。
+- 对于每一个val，如果它的上下左右边界组成的矩形内要么是val，要么是0，那么就将其中的所有元素修改为0。
+- 如果对于所有的val，都不存在这样一个可行的矩形，则打印失败。
+- 如果最终结果是全零矩阵，则打印成功。
+
+![image.png](https://pic.leetcode-cn.com/1600535128-KnkkgT-image.png)
+
+* 
+
+```
+class Solution {
+    public boolean isPrintable(int[][] targetGrid) {
+        int[] values=new int[61];
+        int[] min_i=new int[61]; Arrays.fill(min_i, 61);
+        int[] max_i=new int[61]; Arrays.fill(max_i, -1);
+        int[] min_j=new int[61]; Arrays.fill(min_j, 61);
+        int[] max_j=new int[61]; Arrays.fill(max_j, -1);
+        int n=targetGrid.length, m=targetGrid[0].length;
+        Set<Integer> set=new HashSet<>();
+        for(int i=0; i<n; i++){
+            for(int j=0; j<m; j++){
+                int val=targetGrid[i][j];
+                set.add(val);
+                min_i[val]=Math.min(min_i[val], i);
+                max_i[val]=Math.max(max_i[val], i);
+                min_j[val]=Math.min(min_j[val], j);
+                max_j[val]=Math.max(max_j[val], j);
+            }
+        }
+        while(!allZero(targetGrid)){
+            int value=-1;
+            for(int val:set){
+                if(allValid(min_i[val], min_j[val], max_i[val], max_j[val], val, targetGrid)){
+                    beZero(min_i[val], min_j[val], max_i[val], max_j[val], targetGrid);
+                    value=val;
+                    break;
+                }
+            }
+            if(value!=-1) set.remove(value);
+            else return false;
+        }
+        return true;
+    }
+    boolean allValid(int i1, int j1, int i2, int j2, int val, int[][] targetGrid){
+        for(int i=i1; i<=i2; i++){
+            for(int j=j1; j<=j2; j++){
+                if(targetGrid[i][j]!=val&&targetGrid[i][j]!=0)
+                    return false;
+            }
+        }
+        return true;
+    }
+    boolean allZero(int[][] targetGrid){
+        for(int i=0; i<targetGrid.length; i++){
+            for(int j=0; j<targetGrid[0].length; j++){
+                if(targetGrid[i][j]!=0)
+                    return false;
+            }
+        }
+        return true;
+    }
+    void beZero(int i1, int j1, int i2, int j2, int[][] targetGrid){
+        for(int i=i1; i<=i2; i++){
+            for(int j=j1; j<=j2; j++){
+                targetGrid[i][j]=0;
+            }
+        }
+    }
+}
+```
+
