@@ -49,7 +49,6 @@ public class SuccessorLcci{
   * 2023-06-07 11:30:20
   */
 
-import java.util.Iterator;
 
 public static void main(String[] args) {
     Solution solution = new SuccessorLcci().new Solution();
