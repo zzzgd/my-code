@@ -1,0 +1,45 @@
+### 解题思路
+
+该题为优化问题,即寻找k,使得对于所有$|nums[i]-nums[k|*cost[i]$之和最小,将式子展开后发现可以通过计算类似前缀和后缀和的方法进行优化,代码如下
+
+### 代码
+
+* java
+
+```java
+class Solution {
+    public long minCost(int[] nums, int[] cost) {
+      ArrayList<int[]>sto=new ArrayList<>();
+        for(int i=0;i<nums.length;i++)
+            sto.add(new int[]{nums[i],cost[i]});
+        sto.sort((a,b)->a[0]-b[0]);
+        long[] nums_left=new long[nums.length];
+        long[] nums_right=new long[nums.length];
+        long[] costs_right=new long[nums.length];
+        long[] costs_left=new long[nums.length];
+        nums_left[0]=0;
+        costs_left[0]=0;
+        for(int i=1;i<nums.length;i++){
+            nums_left[i]=nums_left[i-1]+ (long) sto.get(i - 1)[0] *sto.get(i-1)[1];
+            costs_left[i]=costs_left[i-1]+sto.get(i-1)[1];
+        }
+        nums_right[nums.length-1]=0;
+        costs_right[nums.length-1]=0;
+        for(int i=nums.length-2;i>=0;i--){
+            nums_right[i]=nums_right[i+1]+ (long) sto.get(i + 1)[0] *sto.get(i+1)[1];
+            costs_right[i]=costs_right[i+1]+sto.get(i+1)[1];
+        }
+
+        long result= Long.MAX_VALUE;
+        for(int i=0;i<nums.length;i++){
+            long mid=nums_right[i]-nums_left[i]+ (long) sto.get(i)[0] *(costs_left[i]-costs_right[i]);
+            if(mid<result)
+                result=mid;
+        }
+        return result;
+
+
+    }
+}
+```
+

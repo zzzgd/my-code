@@ -1,0 +1,44 @@
+### 解题思路
+
+看灵神的的评论说可以将其分摊，于是写出如下代码
+简单说就是将其cost数组化作nums数组中
+
+### 代码
+
+* java
+
+```java
+class Solution {
+    public long minCost(int[] nums, int[] cost) {
+        int n = nums.length;
+        int[][] pair = new int[n][2];
+        //将cost平摊开，比如说移动一个1消耗2，就相当于两个1，各消耗1
+        //此时题目变成将数组变成相等需要多少步
+        //变成中位数就是最佳
+        long count = 0;//记录所有消耗数
+        for (int i=0;i<n;i++){
+            count+=(long) cost[i];
+            pair[i] = new int[]{nums[i],cost[i]};
+        }
+        Arrays.sort(pair,(a,b)->a[0]-b[0]);
+
+        long ans=0l;
+        long idx = count/2;
+        long tmp = 0;
+        int x = 0;
+        for (int i=0;i<n;i++){
+            //这里右侧要有等于
+            if (tmp<idx && tmp+pair[i][1]>=idx){
+                x = pair[i][0];
+                break;
+            }
+            tmp+=(long) pair[i][1];
+        }
+        for (int i=0;i<n;i++){
+            ans+=(long) Math.abs(pair[i][0]-x)*pair[i][1];
+        }
+        return ans;
+    }   
+}
+```
+
