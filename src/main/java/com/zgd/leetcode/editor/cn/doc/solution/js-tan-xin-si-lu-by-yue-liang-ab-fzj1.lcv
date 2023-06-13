@@ -1,0 +1,39 @@
+> Problem: [2224. 转化时间需要的最少操作数](https://leetcode.cn/problems/minimum-number-of-operations-to-convert-time/description/)
+
+[TOC]
+
+# 思路
+
+- 先获取两个值的秒数，用大的秒数s2依次使用[60, 15, 5, 1]数组中的值进行减扣。
+- 当把s2减至s1时返回计算次数即可。
+
+# Code
+
+* []
+
+```JavaScript
+
+/**
+ * @param {string} current
+ * @param {string} correct
+ * @return {number}
+ */
+var convertTime = function(current, correct) {
+    let [m1, s1] = current.split(':').map(Number)
+    let [m2, s2] = correct.split(':').map(Number)
+    s1 += 60 * m1
+    s2 += 60 * m2
+    let count = 0
+    let sets = [60, 15, 5, 1]
+    for (let i = 0; i < sets.length; i++) {
+        let set = sets[i]
+        let diff = ((s2 - s1) / set) >> 0
+        count += diff
+        s2 -= set * diff
+        if (s2 === s1) {
+            return count
+        }
+    }
+};
+```
+
