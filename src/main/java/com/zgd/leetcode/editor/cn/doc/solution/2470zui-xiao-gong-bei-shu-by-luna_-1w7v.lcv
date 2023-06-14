@@ -1,0 +1,101 @@
+枚举，每次向后一个位置并判断当前子数组的最小公倍数是不是k
+两个数求最小公倍数：a * b / gcd(a, b)
+
+* []
+
+```c++
+class Solution {
+public:
+    int subarrayLCM(vector<int>& nums, int k) {
+        int ans = 0;
+        int n = nums.size();
+        for(int i = 0; i < n; i ++)
+        {
+            int temp = nums[i];
+            for(int j = i; j < n; j ++)
+            {
+                temp = temp * nums[j] / gcd(temp, nums[j]);
+                if(temp == k)
+                    ans ++;
+                else if(temp > k)           //**********
+                    break;
+            }
+        }
+        return ans;
+    }
+
+        //求最大公因数
+    int gcd(int a, int b)
+    {
+        while(b != 0)
+        {
+            int temp = a % b;
+            a = b;
+            b = temp;
+        }
+        return a;
+    }
+};
+```
+
+* []
+
+```python
+class Solution:
+    def subarrayLCM(self, nums: List[int], k: int) -> int:
+
+        def gcd(a: int, b: int) -> int:
+            while b != 0:
+                temp = a % b
+                a = b
+                b = temp
+            return a
+        
+        ans = 0
+        n = len(nums)
+        for i in range(n):
+            temp = nums[i]
+            for j in range(i, n):
+                temp = temp * nums[j] // gcd(temp, nums[j])
+                if temp == k:
+                    ans += 1
+                elif temp > k:
+                    break
+        return ans
+```
+
+* []
+
+```java
+class Solution {
+    public int subarrayLCM(int[] nums, int k) {
+        int ans = 0;
+        int n = nums.length;
+        for(int i = 0; i < n; i ++)
+        {
+            int temp = nums[i];
+            for(int j = i; j < n; j ++)
+            {
+                temp = temp * nums[j] / gcd(temp, nums[j]);
+                if(temp == k)
+                    ans ++;
+                else if(temp > k)           //**********
+                    break;
+            }
+        }
+        return ans;
+    }
+
+    public int gcd(int a, int b)
+    {
+        while(b != 0)
+        {
+            int temp = a % b;
+            a = b;
+            b = temp;
+        }
+        return a;
+    }
+}
+```
+
