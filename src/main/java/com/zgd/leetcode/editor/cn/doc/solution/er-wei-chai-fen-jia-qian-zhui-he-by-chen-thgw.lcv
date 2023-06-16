@@ -1,0 +1,55 @@
+### 解题思路
+
+此处撰写解题思路
+1.用前缀和判断某一区域是否可贴邮票
+2.用二维差分对贴过的邮票进行标记
+
+### 代码
+
+* java
+
+```java
+class Solution {
+    public boolean possibleToStamp(int[][] grid, int stampHeight, int stampWidth) {
+        int m = grid.length;
+        int n = grid[0].length;
+        //求原来地图的前缀和，以此判断在某一区域内能否贴邮票，若在该区域内的二维前缀和为0，则表示可贴，大于0则不可贴
+        int[][] prematrix = new int[m+1][n+1];
+        for(int i = 0;i < m;i++){
+            for(int j = 0;j < n;j++){
+                prematrix[i+1][j+1] = grid[i][j] + prematrix[i][j+1] + prematrix[i+1][j] - prematrix[i][j];
+            }
+        }
+        //利用差分数组，对可贴邮票的区域进行标记,且能贴就贴，因为宁愿贴重，不可少贴
+        int[][] diffmatrix = new int[m+1][n+1];
+        for(int i = 0;i < m;i++){
+            for(int j = 0;j < n;j++){
+                //以该点为邮票的左上角，能否贴邮票
+                if(grid[i][j] == 0){
+                    if(i + stampHeight <= m && j + stampWidth <= n && prematrix[i+stampHeight][j+stampWidth] + prematrix[i][j] - prematrix[i+stampHeight][j] - prematrix[i][j+stampWidth] == 0){
+                        diffmatrix[i][j]++;
+                        diffmatrix[i+stampHeight][j+stampWidth]++;
+                        diffmatrix[i+stampHeight][j]--;
+                        diffmatrix[i][j+stampWidth]--;
+                    }
+                }
+            }
+        }
+        //滚动数组求前缀和对差分数组还原，判断结果
+        int[] cnt = new int[n+1];
+        int[] pre = new int[n+1];
+        for(int i = 0;i < m;i++){
+            for(int j = 0;j < n;j++){
+                //还原
+                cnt[j+1] = diffmatrix[i][j] + cnt[j] + pre[j+1] - pre[j];
+                if(cnt[j+1] == 0 && grid[i][j] == 0) return false;
+            }
+            int[] tmp = pre;
+            pre = cnt;
+            cnt = tmp;
+        } 
+        return true;
+    }
+}
+```
+

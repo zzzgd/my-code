@@ -1,0 +1,70 @@
+### 解题思路
+
+前缀和O(1)模拟邮票填充的过程
+差分数组O(1)模拟满足填充邮票位置的标记
+
+### 代码
+
+* java
+
+```java
+class Solution {
+        public static boolean possibleToStamp(int[][] grid, int stampHeight, int stampWidth) {
+        int[][] sum = new int[grid.length + 1][grid[0].length + 1];
+        int[][] dd = new int[grid.length + 2][grid[0].length + 2];
+        int m = grid.length;
+        int n = grid[0].length;
+        int[][] disSum = new int[m + 1][n + 1];
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[i].length; j++) {
+                int ii = culIndex(i);
+                int jj = culIndex(j);
+                sum[ii][jj] = grid[i][j] + sum[ii - 1][jj] + sum[ii][jj - 1] - sum[ii - 1][jj - 1];
+                dd[ii][jj] = grid[i][j] - disSum[ii - 1][jj] - disSum[ii][jj - 1] + disSum[ii - 1][jj - 1];
+                disSum[ii][jj] = disSum[ii - 1][jj] + disSum[ii][jj - 1] - disSum[ii - 1][jj - 1] + dd[ii][jj];
+//                System.out.printf("%d ", dd[ii][jj]);
+            }
+//            System.out.println();
+        }
+//        System.out.println();
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == 1) continue;
+                int endI = i + stampHeight - 1;
+                int endJ = j + stampWidth - 1;
+                if (endI >= m || endJ >= n) continue;
+                int diff = sum[culIndex(endI)][culIndex(endJ)]
+                        - sum[culIndex(i - 1)][culIndex(endJ)]
+                        - sum[culIndex(endI)][culIndex(j - 1)]
+                        + sum[culIndex(i - 1)][culIndex(j - 1)];
+                if (diff > 0) continue;
+//                System.out.println(i + "-" + j);
+                update(i, j, endI, endJ, 1, dd);
+            }
+        }
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                int ii = culIndex(i);
+                int jj = culIndex(j);
+                disSum[ii][jj] = disSum[ii - 1][jj] + disSum[ii][jj - 1] - disSum[ii - 1][jj - 1] + dd[ii][jj];
+                if (disSum[ii][jj] == 0) return false;
+//                System.out.printf("%d ", disSum[ii][jj]);
+            }
+//            System.out.println();
+        }
+        return true;
+    }
+
+    private static void update(int x, int y, int endX, int endY, int value, int[][] dis) {
+        dis[culIndex(x)][culIndex(y)] += value;
+        dis[culIndex(endX + 1)][culIndex(endY + 1)] += value;
+        dis[culIndex(endX + 1)][culIndex(y)] -= value;
+        dis[culIndex(x)][culIndex(endY + 1)] -= value;
+    }
+
+    private static int culIndex(int i) {
+        return i + 1;
+    }
+}
+```
+

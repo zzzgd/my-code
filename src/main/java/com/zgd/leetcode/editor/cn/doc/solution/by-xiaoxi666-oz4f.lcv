@@ -1,0 +1,146 @@
+* java
+
+```java
+class Solution {
+
+    int m;
+    int n;
+
+    public boolean possibleToStamp(int[][] grid, int stampHeight, int stampWidth) {
+        m = grid.length;
+        n = grid[0].length;
+
+        // 计算前缀和数组，用于判断是否可以贴邮票
+        int[][] preSum = genPreSum(grid);
+
+        // 计算差分数组，模拟贴邮票的操作
+        int[][] diff = genDiff(grid, stampHeight, stampWidth, preSum);
+
+        // 根据差分数组还原贴过邮票的矩阵。网格贴了几张邮票，计数值就是几
+        int[][] resultGrid = genResultGrid(diff);
+
+        // 判断grid为0的地方，是否都被邮票覆盖住了
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (resultGrid[i][j] == 0 && grid[i][j] == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 计算前缀和数组，用于判断是否可以贴邮票
+     *
+     * @param grid
+     * @return
+     */
+    private int[][] genPreSum(int[][] grid) {
+        int[][] preSum = new int[m + 1][n + 1];
+        preSum[0][0] = grid[0][0];
+        for (int i = 0; i < m; ++i) {
+            preSum[i + 1][0] = grid[i][0];
+        }
+        for (int j = 0; j < n; ++j) {
+            preSum[0][j + 1] = grid[0][j];
+        }
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                preSum[i + 1][j + 1] = preSum[i][j + 1] + preSum[i + 1][j] - preSum[i][j] + grid[i][j];
+            }
+        }
+        return preSum;
+    }
+
+    /**
+     * 计算差分数组，模拟贴邮票的操作
+     *
+     * @param grid
+     * @param stampHeight
+     * @param stampWidth
+     * @param preSum      前缀和数组
+     * @return
+     */
+    private int[][] genDiff(int[][] grid, int stampHeight, int stampWidth, int[][] preSum) {
+        int[][] diff = new int[m + 1][n + 1];
+
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (canStamp(grid, i, j, stampHeight, stampWidth, preSum)) {
+                    ++diff[i][j];
+                    --diff[i][j + stampWidth];
+                    --diff[i + stampHeight][j];
+                    ++diff[i + stampHeight][j + stampWidth];
+                }
+            }
+        }
+        return diff;
+    }
+
+    /**
+     * 判断是否可以贴邮票。以坐标[i,j]格子为邮票的左上角。
+     * 判定标准，全部满足时则可以贴邮票：
+     * 1、当前格子没有被占用
+     * 2、邮票没有超出grid的边界
+     * 3、邮票不能覆盖已经被占据的格子
+     *
+     * @param grid
+     * @param i
+     * @param j
+     * @param stampHeight
+     * @param stampWidth
+     * @param preSum      前缀和数组
+     * @return
+     */
+    private boolean canStamp(int[][] grid,
+                             int i, int j,
+                             int stampHeight, int stampWidth,
+                             int[][] preSum) {
+        return grid[i][j] == 0
+                && i + stampHeight <= m
+                && j + stampWidth <= n
+                && sumRegion(preSum, i, j, i + stampHeight - 1, j + stampWidth - 1) == 0;
+    }
+
+    /**
+     * 计算矩形范围的所有格子值的总和。注：如果结果不是0，则表示某些格子已经被占据。
+     *
+     * @param preSum 前缀和数组
+     * @param row1   矩形的左上角横坐标（含）
+     * @param col1   矩形的左上角纵坐标（含）
+     * @param row2   矩形的右下角横坐标（含）
+     * @param col2   矩形的右下角纵坐标（含）
+     * @return
+     */
+    private int sumRegion(int[][] preSum, int row1, int col1, int row2, int col2) {
+        return preSum[row2 + 1][col2 + 1] - preSum[row1][col2 + 1] - preSum[row2 + 1][col1] + preSum[row1][col1];
+    }
+
+    /**
+     * 根据差分数组还原贴过邮票的矩阵。网格被几张邮票覆盖，计数值就是几。
+     *
+     * @param diff 差分数组
+     * @return 贴过邮票的矩阵(不包括原来已经占用的格子)
+     */
+    private int[][] genResultGrid(int[][] diff) {
+        int[][] res = new int[m][n];
+        res[0][0] = diff[0][0];
+
+        for (int i = 1; i < m; ++i) {
+            res[i][0] = diff[i][0] + res[i - 1][0];
+        }
+        for (int j = 1; j < n; ++j) {
+            res[0][j] = diff[0][j] + res[0][j - 1];
+        }
+
+        for (int i = 1; i < m; ++i) {
+            for (int j = 1; j < n; ++j) {
+                res[i][j] = diff[i][j] + res[i - 1][j] + res[i][j - 1] - res[i - 1][j - 1];
+            }
+        }
+        return res;
+    }
+}
+```
+
