@@ -1,0 +1,60 @@
+### 解题思路
+
+终于跑通啦～  下面按照我的思考过程来叙述一下解题思路！
+- 初步想法
+  一个自然的想法：将word1和word2合并为word，根据动态规划求解word的最大回文子序列的长度。
+
+* 
+
+```
+# 定义
+dp[i][j]是s[i...j]最大回文子序列的长度 (左右端点均包含)   
+# 初始化
+dp[i][i]=1
+dp[i][i+1]=2 if word[i]==word[i+1] else 1
+# 迭代   
+dp[i][j]=max(dp[i+1][j], dp[i][j-1]) if word[i]!=word[j] and j-i>2
+dp[i][j]=max(dp[i+1][j], dp[i][j-1], dp[i+1][j-1]+2) if word[i]=word[j] and j-i>2
+```
+
+但是这样做是不对的 因为题目说‘非空’，所选取的回文子序列必须既有word1也有word2中的字母。
+- 根据题意修改
+  我们只需要在`word[i]==word[j]`且`i`和`j`跨字符串时，再更新`max_len`即可
+  因为每一个跨字符串的回文子序列总是这样产生的。
+
+### 代码
+
+* python3
+
+```python
+def longestPalindrome(word1, word2) -> int:
+    word=word1+word2
+    n=len(word)
+    n1, n2=len(word1), len(word2)
+    dp=[[1]*n for _ in range(n)]
+    max_len=1
+    sign_cross=defaultdict(lambda: False)
+    for k in range(1,n):
+        for i in range(n-k):
+            j=i+k
+            if k==1: 
+                dp[i][j]=2 if word[i]==word[j] else 1
+                if i<n1 and j>=n1: max_len=max(max_len, dp[i][j])
+            else:
+                dp[i][j]=max(dp[i+1][j], dp[i][j-1])    
+                #注意这个逻辑哦 如果两头等：跨字符串时更新max_len 无论何时都更新dp[i][j]
+                if word[i]==word[j]:
+                    if (i<n1 and j>=n1): max_len=max(max_len, dp[i+1][j-1]+2)
+                    dp[i][j]=max(dp[i][j], dp[i+1][j-1]+2) 
+            print('dp[{}][{}]={} s={}'.format(i,j, dp[i][j], word[i:(j+1)]))
+    return max_len if max_len>=2 else 0
+```
+
+### 细节
+
+有一个细节！跨字符串的最大回文子序列 不一定是最大回文子序列 也就是
+`max_len=max(max_len, dp[i+1][j-1]+2)`,但可能`dp[i][j]!=dp[i+1][j-1]+2`.
+所以如果我们用标记法 标记上每一个$dp[i][j]$对应的回文子序列是否跨字符串 然后令
+`max_len=max(max_len, dp[i][j])` if `dp[i][j]`对应的回文子序列跨字符串
+这样更麻烦 而且错误 (有1个用例fail)
+

@@ -1,0 +1,44 @@
+# 分析
+
+* 假设没有必须从两个字符串都取出非空序列的条件，也就是回文串可以完全在同一个字符串，那么这道题可以用动态规划轻易结局：将word1和word2拼接在一起s = word1 + word2，然后算[0, word1.length() + word2.length() - 1]的最大回文子序列。令dp[i][j] 为拼接后的字符串[i,j]子串中的最大回文子序列，那么有 `dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1])`，另外，如果`s.charAt(i) == s.charAt(j)`，dp[i][j] 还可能为`dp[i + 1][j - 1] + 2`，另外dp[i][i] = 1, 表示由一个字符组成的最大回文子序列为1，如果s.charAt(i) == s.charAt(i + 1)，那么dp[i][i + 1] = 2;
+* 现在是必须从word1和word2中取出非空的子序列，那么我们需要做一些处理：在添加两边新字符的时候，判断i和j是否分别在两个字符串上，如果不是，那么这个结果不与最终结果比较，但是后面也许要用到这个回文子序列，所以记在dp中，用max记录最终结果
+
+* java
+
+```java
+class Solution {
+    public int longestPalindrome(String word1, String word2) {
+        String s = word1 + word2;//拼接
+        int[][] dp = new int[s.length()][s.length()];
+        int max = 0;//最终结果
+        for (int i = 0; i < s.length(); i++) {
+            dp[i][i] = 1;//单个字符回文子序列长度为1
+        }
+        //dp[i][j]需要用到dp[i + 1][j - 1]， 所以i从大到小，j从小到大
+        for (int i = s.length() - 1; i >= 0; i--) {
+            for (int j = i + 1; j < s.length(); j++) {
+                if (j == i + 1) {//相邻的情况
+                    if (s.charAt(i) == s.charAt(j)) {//相邻的相等，那么组成的回文子序列长度为2
+                        dp[i][j] = 2;
+                        if (j == word1.length()) max = Math.max(max, 2);//如果ij分别在两个字符串上，记录结果
+                    } else {
+                        dp[i][j] = 1;//相邻的不相等也有1个长度
+                    }
+                    
+                } else {
+                    if (s.charAt(i) == s.charAt(j)) {
+                        dp[i][j] = dp[i + 1][j - 1] + 2;
+                        if (i < word1.length() && j >= word1.length()) {//如果ij分别在两个字符串上，更新结果
+                            max = Math.max(max, dp[i][j]);
+                        }
+                    }
+                    dp[i][j] = Math.max(dp[i][j], dp[i][j - 1]);
+                    dp[i][j] = Math.max(dp[i][j], dp[i + 1][j]);
+                }
+            }
+        }
+        return max;//返回最终结果
+    }
+}
+```
+
