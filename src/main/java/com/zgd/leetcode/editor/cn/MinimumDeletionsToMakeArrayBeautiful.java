@@ -58,8 +58,21 @@ public class MinimumDeletionsToMakeArrayBeautiful{
   * 2023-12-15 17:30:09
   */  
   public static void main(String[] args) {
-    Solution solution = new MinimumDeletionsToMakeArrayBeautiful().new Solution();
-    solution.minDeletion(new int[]{2,8,1,0,4,4,7,0,4,5,1,2,4,1});
+//    Solution solution = new MinimumDeletionsToMakeArrayBeautiful().new Solution();
+//    solution.minDeletion(new int[]{2,8,1,0,4,4,7,0,4,5,1,2,4,1});
+      int[] nums = new int[]{2,3,1,1,4,2,1};
+          int len = nums.length;
+          int end = 0;
+          int maxPosition = 0;
+          int steps = 0;
+          for(int i=0;i<len -1;i++){
+              maxPosition = Math.max(maxPosition,i+nums[i]);
+              if(i==end){
+                  end = maxPosition;
+                  steps++;
+              }
+          }
+      System.out.println("steps = " + steps);
   }
   
   //leetcode submit region begin(Prohibit modification and deletion)
